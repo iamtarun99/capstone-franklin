@@ -1,9 +1,9 @@
-# Your Project's Title...
-Your project's description...
+# Capstone Franklin
+  AEM Franklin / EDS
 
 ## Environments
-- Preview: https://main--{repo}--{owner}.hlx.page/
-- Live: https://main--{repo}--{owner}.hlx.live/
+- Preview: https://main--capstone-franklin--iamtarun99.hlx.page/
+- Live: https://main--capstone-franklin--iamtarun99.hlx.live/
 
 ## Installation
 
