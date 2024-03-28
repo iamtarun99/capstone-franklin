@@ -82,9 +82,6 @@ async function loadEager(doc) {
     document.body.classList.add('appear');
     await waitForLCP(LCP_BLOCKS);
   }
-  window.targetGlobalSettings = {
-    cookieDomain: 'main--capstone-franklin--iamtarun99.hlx' //set the cookie directly on this subdomain, for example: 'publish-p1234-e5678.adobeaemcloud.com'
- };
 
   try {
     /* if desktop (proxy for fast connection) or fonts already loaded, load fonts.css */
