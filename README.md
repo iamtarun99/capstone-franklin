@@ -2,8 +2,8 @@
   AEM Franklin / EDS
 
 ## Environments
-- Preview: https://main--capstone-franklin--iamtarun99.hlx.page/
-- Live: https://main--capstone-franklin--iamtarun99.hlx.live/
+- Preview: https://alloy--capstone-franklin--iamtarun99.hlx.page/
+- Live: https://alloy--capstone-franklin--iamtarun99.hlx.live/
 
 ## Installation
 
