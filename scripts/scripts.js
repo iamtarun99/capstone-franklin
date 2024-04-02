@@ -128,9 +128,9 @@ let alloyLoadedPromise = initWebSDK('./alloy.js', {
     edgeConfigId: 'c2f57ae1-7751-402d-839d-ba448bb4ac1b',/* your datastream id here */
     orgId: '975D01725D5A6B1C0A495EF5@AdobeOrg', /* your ims org id here */
   });
-if (getMetadata('target')) {
+// if (getMetadata('target')) {
   alloyLoadedPromise.then(() => getAndApplyRenderDecisions());
-}
+// }
 
 /**
  * Loads everything needed to get to LCP.
@@ -150,7 +150,7 @@ async function loadEager(doc) {
         res();
       });
     });
-    // document.body.classList.add('appear');
+    document.body.classList.add('appear');
     // await waitForLCP(LCP_BLOCKS);
   }
 
