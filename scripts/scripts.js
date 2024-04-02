@@ -11,6 +11,7 @@ import {
   waitForLCP,
   loadBlocks,
   loadCSS,
+  getMetadata
 } from './aem.js';
 
 const LCP_BLOCKS = []; // add your LCP blocks to the list
@@ -69,6 +70,57 @@ export function decorateMain(main) {
   decorateBlocks(main);
 }
 
+function initATJS(path, config) {
+  window.targetGlobalSettings = config;
+  return new Promise((resolve) => {
+    import(path).then(resolve);
+  });
+}
+
+function onDecoratedElement(fn) {
+  // Apply propositions to all already decorated blocks/sections
+  if (document.querySelector('[data-block-status="loaded"],[data-section-status="loaded"]')) {
+    fn();
+  }
+
+  const observer = new MutationObserver((mutations) => {
+    if (mutations.some((m) => m.target.tagName === 'BODY'
+      || m.target.dataset.sectionStatus === 'loaded'
+      || m.target.dataset.blockStatus === 'loaded')) {
+      fn();
+    }
+  });
+  // Watch sections and blocks being decorated async
+  observer.observe(document.querySelector('main'), {
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['data-block-status', 'data-section-status'],
+  });
+  // Watch anything else added to the body
+  observer.observe(document.querySelector('body'), { childList: true });
+}
+
+async function getAndApplyOffers() {
+  const response = await window.adobe.target.getOffers({ request: { execute: { pageLoad: {} } } });
+  onDecoratedElement(() => window.adobe.target.applyOffers({ response }));
+}
+
+let atjsPromise = Promise.resolve();
+// if (getMetadata('target')) {
+  atjsPromise = initATJS('./at.js', {
+    clientCode: 'agsinternal',
+    serverDomain: 'agsinternal.tt.omtrdc.net',
+    imsOrgId: '975D01725D5A6B1C0A495EF5@AdobeOrg',
+    bodyHidingEnabled: false,
+    cookieDomain: window.location.hostname,
+    pageLoadEnabled: false,
+    secureOnly: true,
+    viewsEnabled: false,
+    withWebGLRenderer: false,
+  });
+  document.addEventListener('at-library-loaded', () => getAndApplyOffers());
+// }
+
 /**
  * Loads everything needed to get to LCP.
  * @param {Element} doc The container element
@@ -79,8 +131,17 @@ async function loadEager(doc) {
   const main = doc.querySelector('main');
   if (main) {
     decorateMain(main);
+    // wait for atjs to finish loading
+    await atjsPromise;
+    // show the LCP block in a dedicated frame to reduce TBT
+    await new Promise((resolve) => {
+      window.requestAnimationFrame(async () => {
+        await waitForLCP(LCP_BLOCKS);
+        resolve();
+      });
+    });
     document.body.classList.add('appear');
-    await waitForLCP(LCP_BLOCKS);
+    // await waitForLCP(LCP_BLOCKS);
   }
 
   try {
