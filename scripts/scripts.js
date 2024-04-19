@@ -125,8 +125,8 @@ async function getAndApplyRenderDecisions() {
 }
 
 let alloyLoadedPromise = initWebSDK('./alloy.js', {
-    edgeConfigId: 'c2f57ae1-7751-402d-839d-ba448bb4ac1b',/* your datastream id here */
-    orgId: '975D01725D5A6B1C0A495EF5@AdobeOrg', /* your ims org id here */
+    edgeConfigId: '0ea57121-f7e7-4706-bfaf-b0b7c14e9e7f',/* your datastream id here */
+    orgId: 'D10D965A577677107F000101@AdobeOrg@AdobeOrg', /* your ims org id here */
   });
 // if (getMetadata('target')) {
   alloyLoadedPromise.then(() => getAndApplyRenderDecisions());
