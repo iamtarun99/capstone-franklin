@@ -77,17 +77,17 @@ function initATJS(path, config) {
   });
 }
 
-function onDecoratedElement(fn) {
+async function onDecoratedElement(fn) {
   // Apply propositions to all already decorated blocks/sections
   if (document.querySelector('[data-block-status="loaded"],[data-section-status="loaded"]')) {
-    fn();
+    await fn();
   }
 
-  const observer = new MutationObserver((mutations) => {
+  const observer = new MutationObserver(async(mutations) => {
     if (mutations.some((m) => m.target.tagName === 'BODY'
       || m.target.dataset.sectionStatus === 'loaded'
       || m.target.dataset.blockStatus === 'loaded')) {
-      fn();
+      await fn();
     }
   });
   // Watch sections and blocks being decorated async
@@ -102,7 +102,20 @@ function onDecoratedElement(fn) {
 
 async function getAndApplyOffers() {
   const response = await window.adobe.target.getOffers({ request: { execute: { pageLoad: {} } } });
-  onDecoratedElement(() => window.adobe.target.applyOffers({ response }));
+  const { options = [] } = response.execute.pageLoad;
+
+  onDecoratedElement(() => {
+    window.adobe.target.applyOffers({ response });
+    //
+    options.forEach(async (o) => {
+      const content = o.content[0]?.content;
+      // console.log(o);
+      const offerName = o.responseTokens['offer.name'];
+      const blockName = 'author';
+      await loadCSS(`${window.hlx.codeBasePath}/blocks/${blockName}/${blockName}.css`);
+     document.querySelector(`.${offerName}`).innerHTML = content;
+    });
+  });
 }
 
 let atjsPromise = Promise.resolve();
