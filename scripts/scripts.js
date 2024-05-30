@@ -106,7 +106,17 @@ async function getAndApplyRenderDecisions() {
   // so we can hook up into the AEM EDS page load sequence
   const response = await window.alloy('sendEvent', { renderDecisions: false });
 
-  onDecoratedElement(() => window.alloy('applyPropositions', { propositions: response.propositions }));
+  onDecoratedElement(() => {
+    window.alloy('applyPropositions', { propositions: response.propositions });
+    const offers = response.propositions[0]?.items;
+    offers?.forEach(offer => {
+      const offerName = offer.meta['offer.name'];
+      const offerContent = offer.data?.content;
+      const placeholder = document.querySelector(`.${offerName}`);
+      if (placeholder)
+      placeholder.innerHTML = offerContent;
+    })
+  });
 
   // Reporting is deferred to avoid long tasks
   window.setTimeout(() => {
@@ -151,7 +161,6 @@ async function loadEager(doc) {
       });
     });
     document.body.classList.add('appear');
-    // await waitForLCP(LCP_BLOCKS);
   }
 
   try {
