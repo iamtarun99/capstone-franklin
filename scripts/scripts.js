@@ -13,6 +13,7 @@ import {
   loadCSS,
   getMetadata
 } from './aem.js';
+import { loadFragment } from '../blocks/fragment/fragment.js';
 
 const LCP_BLOCKS = []; // add your LCP blocks to the list
 
@@ -79,14 +80,12 @@ function initATJS(path, config) {
 
 async function onDecoratedElement(fn) {
   // Apply propositions to all already decorated blocks/sections
-  if (document.querySelector('[data-block-status="loaded"],[data-section-status="loaded"]')) {
+  if (document.querySelector('.target[data-section-status="loaded"]')) {
     await fn();
   }
 
   const observer = new MutationObserver(async(mutations) => {
-    if (mutations.some((m) => m.target.tagName === 'BODY'
-      || m.target.dataset.sectionStatus === 'loaded'
-      || m.target.dataset.blockStatus === 'loaded')) {
+    if (mutations.some((m) => m.target.dataset.sectionStatus === 'loaded' && m.target.classList.contains('target'))) {
       await fn();
     }
   });
@@ -94,26 +93,64 @@ async function onDecoratedElement(fn) {
   observer.observe(document.querySelector('main'), {
     subtree: true,
     attributes: true,
-    attributeFilter: ['data-block-status', 'data-section-status'],
+    attributeFilter: ['data-section-status'],
   });
   // Watch anything else added to the body
   observer.observe(document.querySelector('body'), { childList: true });
 }
+function toCssSelector(selector) {
+  return selector.replace(/(\.\S+)?:eq\((\d+)\)/g, (_, clss, i) => `:nth-child(${Number(i) + 1}${clss ? ` of ${clss})` : ''}`);
+}
 
+async function getElementForOffer(offer) {
+  const selector = offer.cssSelector || toCssSelector(offer.selector);
+  return document.querySelector(selector);
+}
+
+async function getElementForMetric(metric) {
+  const selector = toCssSelector(metric.selector);
+  return document.querySelector(selector);
+}
 async function getAndApplyOffers() {
   const response = await window.adobe.target.getOffers({ request: { execute: { pageLoad: {} } } });
   const { options = [] } = response.execute.pageLoad;
 
   onDecoratedElement(() => {
     window.adobe.target.applyOffers({ response });
-    //
-    options.forEach(async (o) => {
+    // keeping track of offers that were already applied
+    // options.forEach((o) => {
+    //   o.content = o.content.filter((c) => !getElementForOffer(c))
+    // });
+    // keeping track of metrics that were already applied
+    // metrics.map((m, i) => getElementForMetric(m) ? i : -1)
+    //     .filter((i) => i >= 0)
+    //     .reverse()
+    //     .map((i) => metrics.splice(i, 1));
+    options?.forEach(async (o) => {
       const content = o.content[0]?.content;
-      // console.log(o);
+
+      /* HTML Offer (Returns fragment URL) */
+      // const container = document.querySelector(`.author-tiles`);
+      // if(container && container.childElementCount === 0)
+      // container.append(await loadFragment(content.split('.page')[1]));
+
+      /* Remote Offer (Returns Pre-loaded Fragment markup from URL) */
       const offerName = o.responseTokens['offer.name'];
-      const blockName = 'author';
-      await loadCSS(`${window.hlx.codeBasePath}/blocks/${blockName}/${blockName}.css`);
-     document.querySelector(`.${offerName}`).innerHTML = content;
+      if (content) {
+        const offerContainer = document.querySelector(`.${offerName}`);
+        offerContainer.innerHTML = content;
+        // reset base path for media to fragment base
+        // const resetAttributeBase = (tag, attr) => {
+        //   placeholder.querySelectorAll(`${tag}[${attr}^="./media_"]`).forEach((elem) => {
+        //     elem[attr] = new URL(elem.getAttribute(attr), new URL(path, window.location)).href;
+        //   });
+        // };
+        // resetAttributeBase('img', 'src');
+        // resetAttributeBase('source', 'srcset');
+  
+        decorateMain(offerContainer);
+        await loadBlocks(offerContainer);
+      }
     });
   });
 }
