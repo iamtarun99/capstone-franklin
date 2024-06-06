@@ -71,6 +71,18 @@ export function decorateMain(main) {
 }
 
 function initWebSDK(path, config) {
+  // Preparing the alloy queue
+  if (!window.alloy) {
+    // eslint-disable-next-line no-underscore-dangle
+    (window.__alloyNS ||= []).push('alloy');
+    window.alloy = (...args) => new Promise((resolve, reject) => {
+      window.setTimeout(() => {
+        window.alloy.q.push([resolve, reject, args]);
+      });
+    });
+    window.alloy.q = [];
+  }
+  // Loading and configuring the websdk
   return new Promise((resolve) => {
     import(path)
       .then(() => window.alloy('configure', config))
@@ -101,14 +113,25 @@ function onDecoratedElement(fn) {
   observer.observe(document.querySelector('body'), { childList: true });
 }
 
+function toCssSelector(selector) {
+  return selector.replace(/(\.\S+)?:eq\((\d+)\)/g, (_, clss, i) => `:nth-child(${Number(i) + 1}${clss ? ` of ${clss})` : ''}`);
+}
+
+async function getElementForProposition(proposition) {
+  const selector = proposition.data.prehidingSelector
+    || toCssSelector(proposition.data.selector);
+  return document.querySelector(selector);
+}
+
 async function getAndApplyRenderDecisions() {
   // Get the decisions, but don't render them automatically
   // so we can hook up into the AEM EDS page load sequence
   const response = await window.alloy('sendEvent', { renderDecisions: false });
+  const { propositions } = response;
 
   onDecoratedElement(() => {
-    window.alloy('applyPropositions', { propositions: response.propositions });
-    const offers = response.propositions[0]?.items;
+    window.alloy('applyPropositions', { propositions });
+    const offers = propositions[0]?.items;
     offers?.forEach(offer => {
       const offerName = offer.meta['offer.name'];
       const offerContent = offer.data?.content;
@@ -125,9 +148,7 @@ async function getAndApplyRenderDecisions() {
       xdm: {
         eventType: 'decisioning.propositionDisplay',
         _experience: {
-          decisioning: {
-            propositions: response.propositions,
-          },
+          decisioning: { propositions },
         },
       },
     });
@@ -136,7 +157,7 @@ async function getAndApplyRenderDecisions() {
 
 let alloyLoadedPromise = initWebSDK('./alloy.js', {
     edgeConfigId: '0ea57121-f7e7-4706-bfaf-b0b7c14e9e7f',/* your datastream id here */
-    orgId: 'D10D965A577677107F000101@AdobeOrg@AdobeOrg', /* your ims org id here */
+    orgId: 'D10D965A577677107F000101@AdobeOrg', /* your ims org id here */
   });
 // if (getMetadata('target')) {
   alloyLoadedPromise.then(() => getAndApplyRenderDecisions());

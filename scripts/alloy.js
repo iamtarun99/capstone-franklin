@@ -99,6 +99,7 @@
   governing permissions and limitations under the License.
   */
 
+
   // Users could have also disabled third-party cookies within these browsers, but
   // we don't know. We also assume "unknown" browsers support third-party cookies,
   // though we don't really know that either. We're making best guesses.
@@ -107,12 +108,42 @@
     return includes(browsersSupportingThirdPartyCookie, browser);
   });
 
+  var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+  function getDefaultExportFromCjs (x) {
+  	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+  }
+
+  function getAugmentedNamespace(n) {
+    if (n.__esModule) return n;
+    var f = n.default;
+  	if (typeof f == "function") {
+  		var a = function a () {
+  			if (this instanceof a) {
+          return Reflect.construct(f, arguments, this.constructor);
+  			}
+  			return f.apply(this, arguments);
+  		};
+  		a.prototype = f.prototype;
+    } else a = {};
+    Object.defineProperty(a, '__esModule', {value: true});
+  	Object.keys(n).forEach(function (k) {
+  		var d = Object.getOwnPropertyDescriptor(n, k);
+  		Object.defineProperty(a, k, d.get ? d : {
+  			enumerable: true,
+  			get: function () {
+  				return n[k];
+  			}
+  		});
+  	});
+  	return a;
+  }
+
   /*
   object-assign
   (c) Sindre Sorhus
   @license MIT
   */
-
   /* eslint-disable no-unused-vars */
   var getOwnPropertySymbols = Object.getOwnPropertySymbols;
   var hasOwnProperty$1 = Object.prototype.hasOwnProperty;
@@ -188,38 +219,81 @@
   };
 
   var reactorObjectAssign = objectAssign;
+  var assign$1 = /*@__PURE__*/getDefaultExportFromCjs(reactorObjectAssign);
 
-  function ownKeys(object, enumerableOnly) {
-    var keys = Object.keys(object);
-    if (Object.getOwnPropertySymbols) {
-      var symbols = Object.getOwnPropertySymbols(object);
-      enumerableOnly && (symbols = symbols.filter(function (sym) {
-        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-      })), keys.push.apply(keys, symbols);
+  function _iterableToArrayLimit(r, l) {
+    var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
+    if (null != t) {
+      var e,
+        n,
+        i,
+        u,
+        a = [],
+        f = !0,
+        o = !1;
+      try {
+        if (i = (t = t.call(r)).next, 0 === l) {
+          if (Object(t) !== t) return;
+          f = !1;
+        } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0);
+      } catch (r) {
+        o = !0, n = r;
+      } finally {
+        try {
+          if (!f && null != t.return && (u = t.return(), Object(u) !== u)) return;
+        } finally {
+          if (o) throw n;
+        }
+      }
+      return a;
     }
-    return keys;
   }
-  function _objectSpread2(target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = null != arguments[i] ? arguments[i] : {};
-      i % 2 ? ownKeys(Object(source), !0).forEach(function (key) {
-        _defineProperty(target, key, source[key]);
-      }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) {
-        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+  function ownKeys(e, r) {
+    var t = Object.keys(e);
+    if (Object.getOwnPropertySymbols) {
+      var o = Object.getOwnPropertySymbols(e);
+      r && (o = o.filter(function (r) {
+        return Object.getOwnPropertyDescriptor(e, r).enumerable;
+      })), t.push.apply(t, o);
+    }
+    return t;
+  }
+  function _objectSpread2(e) {
+    for (var r = 1; r < arguments.length; r++) {
+      var t = null != arguments[r] ? arguments[r] : {};
+      r % 2 ? ownKeys(Object(t), !0).forEach(function (r) {
+        _defineProperty(e, r, t[r]);
+      }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) {
+        Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r));
       });
     }
-    return target;
+    return e;
   }
-  function _typeof(obj) {
+  function _toPrimitive(t, r) {
+    if ("object" != typeof t || !t) return t;
+    var e = t[Symbol.toPrimitive];
+    if (void 0 !== e) {
+      var i = e.call(t, r || "default");
+      if ("object" != typeof i) return i;
+      throw new TypeError("@@toPrimitive must return a primitive value.");
+    }
+    return ("string" === r ? String : Number)(t);
+  }
+  function _toPropertyKey(t) {
+    var i = _toPrimitive(t, "string");
+    return "symbol" == typeof i ? i : i + "";
+  }
+  function _typeof(o) {
     "@babel/helpers - typeof";
 
-    return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) {
-      return typeof obj;
-    } : function (obj) {
-      return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-    }, _typeof(obj);
+    return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) {
+      return typeof o;
+    } : function (o) {
+      return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+    }, _typeof(o);
   }
   function _defineProperty(obj, key, value) {
+    key = _toPropertyKey(key);
     if (key in obj) {
       Object.defineProperty(obj, key, {
         value: value,
@@ -235,12 +309,11 @@
   function _objectWithoutPropertiesLoose(source, excluded) {
     if (source == null) return {};
     var target = {};
-    var sourceKeys = Object.keys(source);
-    var key, i;
-    for (i = 0; i < sourceKeys.length; i++) {
-      key = sourceKeys[i];
-      if (excluded.indexOf(key) >= 0) continue;
-      target[key] = source[key];
+    for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        if (excluded.indexOf(key) >= 0) continue;
+        target[key] = source[key];
+      }
     }
     return target;
   }
@@ -274,30 +347,6 @@
   function _iterableToArray(iter) {
     if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
   }
-  function _iterableToArrayLimit(arr, i) {
-    var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"];
-    if (_i == null) return;
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _s, _e;
-    try {
-      for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"] != null) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
-    return _arr;
-  }
   function _unsupportedIterableToArray(o, minLen) {
     if (!o) return;
     if (typeof o === "string") return _arrayLikeToArray(o, minLen);
@@ -316,20 +365,6 @@
   }
   function _nonIterableRest() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-  }
-  function _toPrimitive(input, hint) {
-    if (typeof input !== "object" || input === null) return input;
-    var prim = input[Symbol.toPrimitive];
-    if (prim !== undefined) {
-      var res = prim.call(input, hint || "default");
-      if (typeof res !== "object") return res;
-      throw new TypeError("@@toPrimitive must return a primitive value.");
-    }
-    return (hint === "string" ? String : Number)(input);
-  }
-  function _toPropertyKey(arg) {
-    var key = _toPrimitive(arg, "string");
-    return typeof key === "symbol" ? key : String(key);
   }
 
   /*
@@ -368,7 +403,7 @@
     }
     if (values.length < 2) {
       // if the number of args is 0 or 1, just use the default behavior from Object.assign
-      return reactorObjectAssign.apply(void 0, values);
+      return assign$1.apply(void 0, values);
     }
     return values.reduce(function (accumulator, currentValue) {
       if (isObject(currentValue)) {
@@ -390,137 +425,116 @@
     }); // no default value to pass into reduce because we want to skip the first value
   });
 
-  var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
-
-  function createCommonjsModule(fn, module) {
-  	return module = { exports: {} }, fn(module, module.exports), module.exports;
+  /*! js-cookie v3.0.5 | MIT */
+  /* eslint-disable no-var */
+  function assign(target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+      for (var key in source) {
+        target[key] = source[key];
+      }
+    }
+    return target;
   }
+  /* eslint-enable no-var */
 
-  var js_cookie = createCommonjsModule(function (module, exports) {
-    (function (factory) {
-      var registeredInModuleLoader;
-      {
-        module.exports = factory();
-        registeredInModuleLoader = true;
+  /* eslint-disable no-var */
+  var defaultConverter = {
+    read: function read(value) {
+      if (value[0] === '"') {
+        value = value.slice(1, -1);
       }
-      if (!registeredInModuleLoader) {
-        var OldCookies = window.Cookies;
-        var api = window.Cookies = factory();
-        api.noConflict = function () {
-          window.Cookies = OldCookies;
-          return api;
-        };
+      return value.replace(/(%[\dA-F]{2})+/gi, decodeURIComponent);
+    },
+    write: function write(value) {
+      return encodeURIComponent(value).replace(/%(2[346BF]|3[AC-F]|40|5[BDE]|60|7[BCD])/g, decodeURIComponent);
+    }
+  };
+  /* eslint-enable no-var */
+
+  /* eslint-disable no-var */
+
+  function init(converter, defaultAttributes) {
+    function set(name, value, attributes) {
+      if (typeof document === 'undefined') {
+        return;
       }
-    })(function () {
-      function extend() {
-        var i = 0;
-        var result = {};
-        for (; i < arguments.length; i++) {
-          var attributes = arguments[i];
-          for (var key in attributes) {
-            result[key] = attributes[key];
-          }
+      attributes = assign({}, defaultAttributes, attributes);
+      if (typeof attributes.expires === 'number') {
+        attributes.expires = new Date(Date.now() + attributes.expires * 864e5);
+      }
+      if (attributes.expires) {
+        attributes.expires = attributes.expires.toUTCString();
+      }
+      name = encodeURIComponent(name).replace(/%(2[346B]|5E|60|7C)/g, decodeURIComponent).replace(/[()]/g, escape);
+      var stringifiedAttributes = '';
+      for (var attributeName in attributes) {
+        if (!attributes[attributeName]) {
+          continue;
         }
-        return result;
-      }
-      function decode(s) {
-        return s.replace(/(%[0-9A-Z]{2})+/g, decodeURIComponent);
-      }
-      function init(converter) {
-        function api() {}
-        function set(key, value, attributes) {
-          if (typeof document === 'undefined') {
-            return;
-          }
-          attributes = extend({
-            path: '/'
-          }, api.defaults, attributes);
-          if (typeof attributes.expires === 'number') {
-            attributes.expires = new Date(new Date() * 1 + attributes.expires * 864e+5);
-          }
-
-          // We're using "expires" because "max-age" is not supported by IE
-          attributes.expires = attributes.expires ? attributes.expires.toUTCString() : '';
-          try {
-            var result = JSON.stringify(value);
-            if (/^[\{\[]/.test(result)) {
-              value = result;
-            }
-          } catch (e) {}
-          value = converter.write ? converter.write(value, key) : encodeURIComponent(String(value)).replace(/%(23|24|26|2B|3A|3C|3E|3D|2F|3F|40|5B|5D|5E|60|7B|7D|7C)/g, decodeURIComponent);
-          key = encodeURIComponent(String(key)).replace(/%(23|24|26|2B|5E|60|7C)/g, decodeURIComponent).replace(/[\(\)]/g, escape);
-          var stringifiedAttributes = '';
-          for (var attributeName in attributes) {
-            if (!attributes[attributeName]) {
-              continue;
-            }
-            stringifiedAttributes += '; ' + attributeName;
-            if (attributes[attributeName] === true) {
-              continue;
-            }
-
-            // Considers RFC 6265 section 5.2:
-            // ...
-            // 3.  If the remaining unparsed-attributes contains a %x3B (";")
-            //     character:
-            // Consume the characters of the unparsed-attributes up to,
-            // not including, the first %x3B (";") character.
-            // ...
-            stringifiedAttributes += '=' + attributes[attributeName].split(';')[0];
-          }
-          return document.cookie = key + '=' + value + stringifiedAttributes;
+        stringifiedAttributes += '; ' + attributeName;
+        if (attributes[attributeName] === true) {
+          continue;
         }
-        function get(key, json) {
-          if (typeof document === 'undefined') {
-            return;
-          }
-          var jar = {};
-          // To prevent the for loop in the first place assign an empty array
-          // in case there are no cookies at all.
-          var cookies = document.cookie ? document.cookie.split('; ') : [];
-          var i = 0;
-          for (; i < cookies.length; i++) {
-            var parts = cookies[i].split('=');
-            var cookie = parts.slice(1).join('=');
-            if (!json && cookie.charAt(0) === '"') {
-              cookie = cookie.slice(1, -1);
-            }
-            try {
-              var name = decode(parts[0]);
-              cookie = (converter.read || converter)(cookie, name) || decode(cookie);
-              if (json) {
-                try {
-                  cookie = JSON.parse(cookie);
-                } catch (e) {}
-              }
-              jar[name] = cookie;
-              if (key === name) {
-                break;
-              }
-            } catch (e) {}
-          }
-          return key ? jar[key] : jar;
-        }
-        api.set = set;
-        api.get = function (key) {
-          return get(key, false /* read as raw */);
-        };
 
-        api.getJSON = function (key) {
-          return get(key, true /* read as json */);
-        };
-
-        api.remove = function (key, attributes) {
-          set(key, '', extend(attributes, {
-            expires: -1
-          }));
-        };
-        api.defaults = {};
-        api.withConverter = init;
-        return api;
+        // Considers RFC 6265 section 5.2:
+        // ...
+        // 3.  If the remaining unparsed-attributes contains a %x3B (";")
+        //     character:
+        // Consume the characters of the unparsed-attributes up to,
+        // not including, the first %x3B (";") character.
+        // ...
+        stringifiedAttributes += '=' + attributes[attributeName].split(';')[0];
       }
-      return init(function () {});
+      return document.cookie = name + '=' + converter.write(value, name) + stringifiedAttributes;
+    }
+    function get(name) {
+      if (typeof document === 'undefined' || arguments.length && !name) {
+        return;
+      }
+
+      // To prevent the for loop in the first place assign an empty array
+      // in case there are no cookies at all.
+      var cookies = document.cookie ? document.cookie.split('; ') : [];
+      var jar = {};
+      for (var i = 0; i < cookies.length; i++) {
+        var parts = cookies[i].split('=');
+        var value = parts.slice(1).join('=');
+        try {
+          var found = decodeURIComponent(parts[0]);
+          jar[found] = converter.read(value, found);
+          if (name === found) {
+            break;
+          }
+        } catch (e) {}
+      }
+      return name ? jar[name] : jar;
+    }
+    return Object.create({
+      set: set,
+      get: get,
+      remove: function remove(name, attributes) {
+        set(name, '', assign({}, attributes, {
+          expires: -1
+        }));
+      },
+      withAttributes: function withAttributes(attributes) {
+        return init(this.converter, assign({}, this.attributes, attributes));
+      },
+      withConverter: function withConverter(converter) {
+        return init(assign({}, this.converter, converter), this.attributes);
+      }
+    }, {
+      attributes: {
+        value: Object.freeze(defaultAttributes)
+      },
+      converter: {
+        value: Object.freeze(converter)
+      }
     });
+  }
+  var api = init(defaultConverter, {
+    path: '/'
   });
 
   /*
@@ -534,11 +548,12 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var cookieJar = {
-    get: js_cookie.get,
-    set: js_cookie.set,
-    remove: js_cookie.remove,
-    withConverter: js_cookie.withConverter
+    get: api.get,
+    set: api.set,
+    remove: api.remove,
+    withConverter: api.withConverter
   };
 
   /*
@@ -552,6 +567,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var deepAssignObject = function deepAssignObject(target, source) {
     Object.keys(source).forEach(function (key) {
       if (isObject(target[key]) && isObject(source[key])) {
@@ -595,6 +611,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
 
   /**
    * Creates a function that, when passed an object of updates, will merge
@@ -730,7 +747,7 @@
   /* eslint-disable */
 
   /*
-  crc32 Â· JavaScript Function to Calculate CRC32 of a String
+  crc32 · JavaScript Function to Calculate CRC32 of a String
   Description
     Below is a JavaScript function to calculate CRC32 of a string. 
     The string can be either ASCII or Unicode. 
@@ -892,6 +909,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var populateElementProperties = function populateElementProperties(element, props) {
     Object.keys(props).forEach(function (key) {
       // The following is to support setting style properties to avoid CSP errors.
@@ -954,6 +972,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
 
   /**
    * Fires an image pixel from the current document's window.
@@ -1053,6 +1072,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var SIBLING_PATTERN = /^\s*>/;
   var querySelectorAll = (function (context, selector) {
     if (!SIBLING_PATTERN.test(selector)) {
@@ -1117,6 +1137,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var splitWithShadow = function splitWithShadow(selector) {
     return selector.split(SHADOW_SEPARATOR);
   };
@@ -1177,6 +1198,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var isShadowSelector = (function (str) {
     return str.indexOf(SHADOW_SEPARATOR) !== -1;
   });
@@ -1192,6 +1214,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
 
   /**
    * Returns an array of matched DOM nodes.
@@ -1218,6 +1241,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var MUTATION_OBSERVER = "MutationObserver";
   var RAF = "requestAnimationFrame";
   var MUTATION_OBSERVER_CONFIG = {
@@ -1419,6 +1443,7 @@
   governing permissions and limitations under the License.
   */
 
+
   /**
    * Returns whether the value is an empty object.
    * @param {*} value
@@ -1523,6 +1548,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var cookieName = baseNamespace + "getTld";
 
   /**
@@ -1594,6 +1620,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var getNamespacedCookieName = (function (orgId, key) {
     return COOKIE_NAME_PREFIX + "_" + sanitizeOrgIdForCookieName(orgId) + "_" + key;
   });
@@ -1655,6 +1682,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var injectDoesIdentityCookieExist = (function (_ref) {
     var orgId = _ref.orgId;
     var identityCookieName = getNamespacedCookieName(orgId, IDENTITY);
@@ -1677,6 +1705,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var getStorageByType = function getStorageByType(context, storageType, namespace) {
     // When storage is disabled on Safari, the mere act of referencing
     // window.localStorage or window.sessionStorage throws an error.
@@ -1747,6 +1776,7 @@
   governing permissions and limitations under the License.
   */
 
+
   /**
    * Returns items that are found within both arrays.
    * @param {Array} a
@@ -1814,6 +1844,7 @@
   governing permissions and limitations under the License.
   */
 
+
   /**
    * Returns whether the value is an integer.
    * @param {*} value
@@ -1835,6 +1866,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
 
   /**
    * Determines whether a cookie name is namespaced according to the contract
@@ -1880,6 +1912,7 @@
   governing permissions and limitations under the License.
   */
 
+
   /**
    * Returns whether the value is a populated string.
    * @param {*} value
@@ -1914,7 +1947,7 @@
   var memoize = (function (fn, keyResolver) {
     var map = new Map();
     return function () {
-      var key = keyResolver ? keyResolver.apply(void 0, arguments) : arguments.length <= 0 ? undefined : arguments[0];
+      var key = arguments.length <= 0 ? undefined : arguments[0];
       if (map.has(key)) {
         return map.get(key);
       }
@@ -1967,7 +2000,7 @@
     return repeatedPadString.slice(0, lengthToAdd) + originalString;
   });
 
-  var src = function src(str) {
+  var src$1 = function src(str) {
     var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     if (!str) return undefined;
     var o = {
@@ -1984,15 +2017,14 @@
     var m = o.parser[opts.strictMode ? 'strict' : 'loose'].exec(str);
     var uri = {};
     var i = 14;
-    while (i--) {
-      uri[o.key[i]] = m[i] || '';
-    }
+    while (i--) uri[o.key[i]] = m[i] || '';
     uri[o.q.name] = {};
     uri[o.key[12]].replace(o.q.parser, function ($0, $1, $2) {
       if ($1) uri[o.q.name][$1] = $2;
     });
     return uri;
   };
+  var parseUri = /*@__PURE__*/getDefaultExportFromCjs(src$1);
 
   var parseDomainBasic = function parseDomainBasic(host) {
     var result = {};
@@ -2027,7 +2059,7 @@
       // eslint-disable-next-line no-param-reassign
       url = "";
     }
-    var parsed = src(url) || {};
+    var parsed = parseUri(url) || {};
     var _parsed$host = parsed.host,
       host = _parsed$host === void 0 ? "" : _parsed$host,
       _parsed$path = parsed.path,
@@ -2075,7 +2107,7 @@
     return configOverrides;
   });
 
-  // Copyright Joyent, Inc. and other Node contributors.
+  var querystring$1 = {};
 
   // If obj.hasOwnProperty has been overridden, then calling
   // obj.hasOwnProperty(prop) will break.
@@ -2128,7 +2160,6 @@
     return obj;
   };
 
-  // Copyright Joyent, Inc. and other Node contributors.
   var stringifyPrimitive = function stringifyPrimitive(v) {
     switch (_typeof(v)) {
       case 'string':
@@ -2163,15 +2194,21 @@
     return encodeURIComponent(stringifyPrimitive(name)) + eq + encodeURIComponent(stringifyPrimitive(obj));
   };
 
-  var querystring = createCommonjsModule(function (module, exports) {
+  querystring$1.decode = querystring$1.parse = decode;
+  querystring$1.encode = querystring$1.stringify = encode;
 
-    exports.decode = exports.parse = decode;
-    exports.encode = exports.stringify = encode;
-  });
-  querystring.decode;
-  querystring.parse;
-  querystring.encode;
-  querystring.stringify;
+  /***************************************************************************************
+   * (c) 2017 Adobe. All rights reserved.
+   * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+   * you may not use this file except in compliance with the License. You may obtain a copy
+   * of the License at http://www.apache.org/licenses/LICENSE-2.0
+   *
+   * Unless required by applicable law or agreed to in writing, software distributed under
+   * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+   * OF ANY KIND, either express or implied. See the License for the specific language
+   * governing permissions and limitations under the License.
+   ****************************************************************************************/
+  var querystring = querystring$1;
 
   // We proxy the underlying querystring module so we can limit the API we expose.
   // This allows us to more easily make changes to the underlying implementation later without
@@ -2191,6 +2228,7 @@
       return querystring.stringify(object);
     }
   };
+  var queryString = /*@__PURE__*/getDefaultExportFromCjs(reactorQueryString);
 
   /*
   Copyright 2019 Adobe. All rights reserved.
@@ -2249,6 +2287,7 @@
   governing permissions and limitations under the License.
   */
 
+
   /**
    * Augments an error's message with additional context as it bubbles up the call stack.
    * @param {String} message The message to be added to the error.
@@ -2294,6 +2333,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
 
   /*
    * coerce `value` to a number or return `defaultValue` if it cannot be.
@@ -2347,77 +2387,63 @@
     return YYYY + "-" + MM + "-" + DD + "T" + hh + ":" + mm + ":" + ss + "." + mmm + ts + th + ":" + tm;
   });
 
-  var rngBrowser = createCommonjsModule(function (module) {
-    // Unique ID creation requires a high quality random # generator.  In the
-    // browser this is a little complicated due to unknown quality of Math.random()
-    // and inconsistent support for the `crypto` API.  We do the best we can via
-    // feature-detection
-
-    // getRandomValues needs to be invoked in a context where "this" is a Crypto
-    // implementation. Also, find the complete implementation of crypto on IE11.
-    var getRandomValues = typeof crypto != 'undefined' && crypto.getRandomValues && crypto.getRandomValues.bind(crypto) || typeof msCrypto != 'undefined' && typeof window.msCrypto.getRandomValues == 'function' && msCrypto.getRandomValues.bind(msCrypto);
-    if (getRandomValues) {
-      // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
-      var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
-
-      module.exports = function whatwgRNG() {
-        getRandomValues(rnds8);
-        return rnds8;
-      };
-    } else {
-      // Math.random()-based (RNG)
-      //
-      // If all else fails, use Math.random().  It's fast, but is of unspecified
-      // quality.
-      var rnds = new Array(16);
-      module.exports = function mathRNG() {
-        for (var i = 0, r; i < 16; i++) {
-          if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
-          rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
-        }
-        return rnds;
-      };
+  // Unique ID creation requires a high quality random # generator. In the browser we therefore
+  // require the crypto API and do not support built-in fallback to lower quality random number
+  // generators (like Math.random()).
+  var getRandomValues;
+  var rnds8 = new Uint8Array(16);
+  function rng() {
+    // lazy load so that environments that need to polyfill have a chance to do so
+    if (!getRandomValues) {
+      // getRandomValues needs to be invoked in a context where "this" is a Crypto implementation.
+      getRandomValues = typeof crypto !== 'undefined' && crypto.getRandomValues && crypto.getRandomValues.bind(crypto);
+      if (!getRandomValues) {
+        throw new Error('crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported');
+      }
     }
-  });
+    return getRandomValues(rnds8);
+  }
 
   /**
    * Convert array of 16 byte values to UUID string format of the form:
    * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
    */
+
   var byteToHex = [];
   for (var i = 0; i < 256; ++i) {
-    byteToHex[i] = (i + 0x100).toString(16).substr(1);
+    byteToHex.push((i + 0x100).toString(16).slice(1));
   }
-  function bytesToUuid(buf, offset) {
-    var i = offset || 0;
-    var bth = byteToHex;
-    // join used to fix memory issue caused by concatenation: https://bugs.chromium.org/p/v8/issues/detail?id=3175#c4
-    return [bth[buf[i++]], bth[buf[i++]], bth[buf[i++]], bth[buf[i++]], '-', bth[buf[i++]], bth[buf[i++]], '-', bth[buf[i++]], bth[buf[i++]], '-', bth[buf[i++]], bth[buf[i++]], '-', bth[buf[i++]], bth[buf[i++]], bth[buf[i++]], bth[buf[i++]], bth[buf[i++]], bth[buf[i++]]].join('');
+  function unsafeStringify(arr) {
+    var offset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+    // Note: Be careful editing this code!  It's been tuned for performance
+    // and works in ways you may not expect. See https://github.com/uuidjs/uuid/pull/434
+    return byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + '-' + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + '-' + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + '-' + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + '-' + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]];
   }
-  var bytesToUuid_1 = bytesToUuid;
+
+  var randomUUID = typeof crypto !== 'undefined' && crypto.randomUUID && crypto.randomUUID.bind(crypto);
+  var native = {
+    randomUUID: randomUUID
+  };
 
   function v4(options, buf, offset) {
-    var i = buf && offset || 0;
-    if (typeof options == 'string') {
-      buf = options === 'binary' ? new Array(16) : null;
-      options = null;
+    if (native.randomUUID && !buf && !options) {
+      return native.randomUUID();
     }
     options = options || {};
-    var rnds = options.random || (options.rng || rngBrowser)();
+    var rnds = options.random || (options.rng || rng)(); // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
 
-    // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
     rnds[6] = rnds[6] & 0x0f | 0x40;
-    rnds[8] = rnds[8] & 0x3f | 0x80;
+    rnds[8] = rnds[8] & 0x3f | 0x80; // Copy bytes to buffer, if provided
 
-    // Copy bytes to buffer, if provided
     if (buf) {
-      for (var ii = 0; ii < 16; ++ii) {
-        buf[i + ii] = rnds[ii];
+      offset = offset || 0;
+      for (var i = 0; i < 16; ++i) {
+        buf[offset + i] = rnds[i];
       }
+      return buf;
     }
-    return buf || bytesToUuid_1(rnds);
+    return unsafeStringify(rnds);
   }
-  var v4_1 = v4;
 
   /*
   Copyright 2023 Adobe. All rights reserved.
@@ -2430,6 +2456,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
 
   /**
    * Wraps a validator returning the value if it is null or undefined, otherwise
@@ -2498,7 +2525,7 @@
    * @returns {function}
    */
   var chain = function chain(baseValidator, newValidator, additionalMethods) {
-    return reactorObjectAssign(callSequentially(baseValidator, newValidator), baseValidator, additionalMethods);
+    return assign$1(callSequentially(baseValidator, newValidator), baseValidator, additionalMethods);
   };
 
   /**
@@ -2517,7 +2544,7 @@
    * @returns {function}
    */
   var nullSafeChain = function nullSafeChain(baseValidator, newValidator, additionalMethods) {
-    return reactorObjectAssign(callSequentially(baseValidator, skipIfNull(newValidator)), baseValidator, additionalMethods);
+    return assign$1(callSequentially(baseValidator, skipIfNull(newValidator)), baseValidator, additionalMethods);
   };
 
   /**
@@ -2532,7 +2559,7 @@
    * @returns {function}
    */
   var reverseNullSafeChainJoinErrors = function reverseNullSafeChainJoinErrors(baseValidator, newValidator, additionalMethods) {
-    return reactorObjectAssign(callSequentiallyJoinErrors(skipIfNull(newValidator), baseValidator), baseValidator, additionalMethods);
+    return assign$1(callSequentiallyJoinErrors(skipIfNull(newValidator), baseValidator), baseValidator, additionalMethods);
   };
 
   /**
@@ -2562,6 +2589,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var booleanValidator = (function (value, path) {
     assertValid(isBoolean(value), value, path, "true or false");
     return value;
@@ -2686,6 +2714,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createMapOfValuesValidator = (function (valueValidator) {
     return function mapOfValues(value, path) {
       var _this = this;
@@ -2730,6 +2759,24 @@
   });
 
   /*
+  Copyright 2023 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+  var createMaximumValidator = (function (typeName, maximum) {
+    return function (value, path) {
+      assertValid(value <= maximum, value, path, typeName + " less than or equal to " + maximum);
+      return value;
+    };
+  });
+
+  /*
   Copyright 2020 Adobe. All rights reserved.
   This file is licensed to you under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License. You may obtain a copy
@@ -2768,6 +2815,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createNonEmptyValidator = (function (message) {
     return function (value, path) {
       if (isObject(value)) {
@@ -2790,6 +2838,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createObjectOfValidator = (function (schema) {
     return function objectOf(value, path) {
       var _this = this;
@@ -2862,6 +2911,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createUniqueValidator = (function () {
     var values = [];
     return function (value, path) {
@@ -2944,6 +2994,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var integerValidator = (function (value, path) {
     assertValid(isInteger(value), value, path, "an integer");
     return value;
@@ -2960,6 +3011,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var numberValidator = (function (value, path) {
     assertValid(isNumber$1(value), value, path, "a number");
     return value;
@@ -2984,7 +3036,7 @@
    */
   var isValidRegExp = (function (value) {
     try {
-      return new RegExp(value) !== null;
+      return RegExp(value) !== null;
     } catch (e) {
       return false;
     }
@@ -3001,6 +3053,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var regexpValidator = (function (value, path) {
     assertValid(isValidRegExp(value), value, path, "a regular expression");
     return value;
@@ -3041,6 +3094,25 @@
     return value;
   });
 
+  /*
+  Copyright 2023 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+
+  var matchesRegexpValidator = (function (regexp) {
+    return function (value, path) {
+      assertValid(regexp.test(value), value, path, "does not match the " + regexp.toString());
+      return value;
+    };
+  });
+
   // The base validator does no validation and just returns the value unchanged
   var base = function base(value) {
     return value;
@@ -3066,6 +3138,9 @@
   var minimumNumber = function minimumNumber(minValue) {
     return nullSafeChain(this, createMinimumValidator("a number", minValue));
   };
+  var maximumNumber = function maximumNumber(maxValue) {
+    return nullSafeChain(this, createMaximumValidator("a number", maxValue));
+  };
   var integer = function integer() {
     return nullSafeChain(this, integerValidator, {
       minimum: minimumInteger
@@ -3082,6 +3157,9 @@
   };
   var regexp = function regexp() {
     return nullSafeChain(this, regexpValidator);
+  };
+  var matches = function matches(regexpPattern) {
+    return nullSafeChain(this, matchesRegexpValidator(regexpPattern));
   };
   var unique = function createUnique() {
     return nullSafeChain(this, createUniqueValidator());
@@ -3117,6 +3195,7 @@
   var number = function number() {
     return nullSafeChain(this, numberValidator, {
       minimum: minimumNumber,
+      maximum: maximumNumber,
       integer: integer,
       unique: unique
     });
@@ -3153,7 +3232,8 @@
       regexp: regexp,
       domain: domain,
       nonEmpty: nonEmptyString,
-      unique: unique
+      unique: unique,
+      matches: matches
     });
   };
   var boundAnyOf = anyOf.bind(base);
@@ -3162,7 +3242,7 @@
   var boundBoolean = boolean.bind(base);
   var boundCallback = callback.bind(base);
   var boundLiteral = literal.bind(base);
-  number.bind(base);
+  var boundNumber = number.bind(base);
   var boundMapOfValues = mapOfValues.bind(base);
   var boundObjectOf = objectOf.bind(base);
   var boundString = string.bind(base);
@@ -3201,6 +3281,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var validateIdentityMap = boundMapOfValues(boundArrayOf(boundObjectOf({
     authenticatedState: boundEnumOf(AMBIGUOUS, AUTHENTICATED, LOGGED_OUT),
     id: boundString(),
@@ -3222,6 +3303,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var validateConfigOverride = boundObjectOf({});
 
   /*
@@ -3273,6 +3355,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createLogController = (function (_ref) {
     var console = _ref.console,
       locationSearch = _ref.locationSearch,
@@ -3280,7 +3363,7 @@
       instanceName = _ref.instanceName,
       createNamespacedStorage = _ref.createNamespacedStorage,
       getMonitors = _ref.getMonitors;
-    var parsedQueryString = reactorQueryString.parse(locationSearch);
+    var parsedQueryString = queryString.parse(locationSearch);
     var storage = createNamespacedStorage("instance." + instanceName + ".");
     var debugSessionValue = storage.session.getItem("debug");
     var debugEnabled = debugSessionValue === "true";
@@ -3411,6 +3494,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var wrapForErrorHandling = function wrapForErrorHandling(fn, stackMessage) {
     return function () {
       var result;
@@ -3475,6 +3559,9 @@
       },
       getLifecycleCallbacks: function getLifecycleCallbacks(hookName) {
         return lifecycleCallbacksByName[hookName] || [];
+      },
+      getComponentNames: function getComponentNames() {
+        return Object.keys(componentsByNamespace);
       }
     };
   });
@@ -3644,6 +3731,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var DECLINED_CONSENT_ERROR_CODE = "declinedConsent";
   var CONSENT_SOURCE_DEFAULT = "default";
   var CONSENT_SOURCE_INITIAL = "initial";
@@ -3727,6 +3815,40 @@
       awaitConsent: awaitInitial,
       withConsent: function withConsent() {
         return this.awaitConsent(true);
+      },
+      current: function current() {
+        switch (this.awaitConsent) {
+          case awaitInDefault:
+            return {
+              state: "in",
+              wasSet: false
+            };
+          case awaitIn:
+            return {
+              state: "in",
+              wasSet: true
+            };
+          case awaitOutDefault:
+            return {
+              state: "out",
+              wasSet: false
+            };
+          case awaitOut:
+            return {
+              state: "out",
+              wasSet: true
+            };
+          case awaitPending:
+            return {
+              state: "pending",
+              wasSet: false
+            };
+          default:
+            return {
+              state: "in",
+              wasSet: false
+            };
+        }
       }
     };
   });
@@ -3742,6 +3864,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createConsent = (function (_ref) {
     var generalConsentState = _ref.generalConsentState,
       logger = _ref.logger;
@@ -3780,6 +3903,9 @@
       },
       withConsent: function withConsent() {
         return generalConsentState.withConsent();
+      },
+      current: function current() {
+        return generalConsentState.current();
       }
     };
   });
@@ -3962,6 +4088,7 @@
   governing permissions and limitations under the License.
   */
 
+
   /**
    * Creates a representation of a gateway response with the addition of
    * helper methods.
@@ -4050,6 +4177,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var injectExecuteCommand = (function (_ref) {
     var logger = _ref.logger,
       configureCommand = _ref.configureCommand,
@@ -4182,6 +4310,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   /**
    * Verifies user provided event options.
    * @param {*} options The user event options to validate
@@ -4351,6 +4480,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createClickHandler = function createClickHandler(_ref) {
     var eventManager = _ref.eventManager,
       lifecycle = _ref.lifecycle,
@@ -4400,8 +4530,9 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var downloadLinkQualifier = boundString().regexp().default("\\.(exe|zip|wav|mp3|mov|mpg|avi|wmv|pdf|doc|docx|xls|xlsx|ppt|pptx)$");
-  var configValidators$1 = boundObjectOf({
+  var configValidators$2 = boundObjectOf({
     clickCollectionEnabled: boundBoolean().default(true),
     onBeforeLinkClickSend: boundCallback(),
     downloadLinkQualifier: downloadLinkQualifier
@@ -4620,6 +4751,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var unsupportedNodeNames = /^(SCRIPT|STYLE|LINK|CANVAS|NOSCRIPT|#COMMENT)$/i;
 
   /**
@@ -4755,6 +4887,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var semanticElements = /^(HEADER|MAIN|FOOTER|NAV)$/i;
   var getAriaRegionLabel = function getAriaRegionLabel(node) {
     var regionLabel;
@@ -4811,6 +4944,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var _getLinkDetails = createGetLinkDetails({
     window: window,
     getLinkName: getLinkName,
@@ -4852,7 +4986,7 @@
     };
   };
   createActivityCollector.namespace = "ActivityCollector";
-  createActivityCollector.configValidators = configValidators$1;
+  createActivityCollector.configValidators = configValidators$2;
   createActivityCollector.buildOnInstanceConfiguredExtraParams = function (_ref3) {
     var config = _ref3.config,
       logger = _ref3.logger;
@@ -4915,7 +5049,8 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
-  var configValidators = boundObjectOf({
+
+  var configValidators$1 = boundObjectOf({
     thirdPartyCookiesEnabled: boundBoolean().default(true),
     idMigrationEnabled: boundBoolean().default(true)
   });
@@ -4931,6 +5066,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   /**
    * Verifies user provided event options.
    * @param {*} options The user event options to validate
@@ -4954,6 +5090,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   /**
    * Verifies user provided event options.
    * @param {*} options The user event options to validate
@@ -5017,7 +5154,7 @@
           }
           // For sendBeacon requests, getEdge() will return {}, so we are using assign here
           // so that sendBeacon requests don't override the edge info from before.
-          edge = reactorObjectAssign(edge, response.getEdge());
+          edge = assign$1(edge, response.getEdge());
           return handleResponseForIdSyncs(response);
         }
       },
@@ -5132,6 +5269,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var awaitVisitorOptIn = (function (_ref) {
     var logger = _ref.logger;
     return new Promise(function (resolve, reject) {
@@ -5163,6 +5301,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var getVisitor = (function (window) {
     var Visitor = window.Visitor;
     return isFunction(Visitor) && isFunction(Visitor.getInstance) && Visitor;
@@ -5179,6 +5318,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var injectGetEcidFromVisitor = (function (_ref) {
     var logger = _ref.logger,
       orgId = _ref.orgId,
@@ -5357,6 +5497,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var addEcidQueryToPayload = (function (payload) {
     payload.mergeQuery({
       identity: {
@@ -5379,8 +5520,7 @@
     };
   };
   var getBrowser = memoize(function (window) {
-    var _matchUserAgent;
-    return matchUserAgent((_matchUserAgent = {}, _defineProperty(_matchUserAgent, EDGE$1, /Edge\/([0-9\._]+)/), _defineProperty(_matchUserAgent, EDGE_CHROMIUM, /Edg\/([0-9\.]+)/), _defineProperty(_matchUserAgent, CHROME, /(?!Chrom.*OPR)Chrom(?:e|ium)\/([0-9\.]+)(:?\s|$)/), _defineProperty(_matchUserAgent, FIREFOX, /Firefox\/([0-9\.]+)(?:\s|$)/), _defineProperty(_matchUserAgent, IE, /Trident\/7\.0.*rv\:([0-9\.]+).*\).*Gecko$/), _defineProperty(_matchUserAgent, SAFARI, /Version\/([0-9\._]+).*Safari/), _matchUserAgent))(window.navigator.userAgent);
+    return matchUserAgent(_defineProperty(_defineProperty(_defineProperty(_defineProperty(_defineProperty(_defineProperty({}, EDGE$1, /Edge\/([0-9\._]+)/), EDGE_CHROMIUM, /Edg\/([0-9\.]+)/), CHROME, /(?!Chrom.*OPR)Chrom(?:e|ium)\/([0-9\.]+)(:?\s|$)/), FIREFOX, /Firefox\/([0-9\.]+)(?:\s|$)/), IE, /Trident\/7\.0.*rv\:([0-9\.]+).*\).*Gecko$/), SAFARI, /Version\/([0-9\._]+).*Safari/))(window.navigator.userAgent);
   });
 
   /*
@@ -5394,6 +5534,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var injectSetDomainForInitialIdentityPayload = (function (_ref) {
     var thirdPartyCookiesEnabled = _ref.thirdPartyCookiesEnabled,
       areThirdPartyCookiesSupportedByDefault = _ref.areThirdPartyCookiesSupportedByDefault;
@@ -5424,6 +5565,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var injectAddLegacyEcidToPayload = (function (_ref) {
     var getLegacyEcid = _ref.getLegacyEcid,
       addEcidToPayload = _ref.addEcidToPayload;
@@ -5467,7 +5609,7 @@
         // don't overwrite a user provided ecid identity
         return;
       }
-      var parsedQueryString = reactorQueryString.parse(locationSearch);
+      var parsedQueryString = queryString.parse(locationSearch);
       var queryStringValue = parsedQueryString[queryStringIdentityParam];
       if (queryStringValue === undefined) {
         return;
@@ -5513,6 +5655,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var addEcidToPayload = (function (payload, ecid) {
     payload.addIdentity(ecidNamespace, {
       id: ecid
@@ -5581,6 +5724,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var getEcidFromResponse = (function (response) {
     var identityResultPayloads = response.getPayloadsByType("identity:result");
     var ecidPayload = find(identityResultPayloads, function (payload) {
@@ -5621,13 +5765,15 @@
   governing permissions and limitations under the License.
   */
 
+
   // This provides the base functionality that all types of requests share.
   var createRequest = (function (options) {
     var payload = options.payload,
       _getAction = options.getAction,
       _getUseSendBeacon = options.getUseSendBeacon,
-      datastreamIdOverride = options.datastreamIdOverride;
-    var id = v4_1();
+      datastreamIdOverride = options.datastreamIdOverride,
+      edgeSubPath = options.edgeSubPath;
+    var id = v4();
     var shouldUseThirdPartyDomain = false;
     var isIdentityEstablished = false;
     return {
@@ -5649,6 +5795,12 @@
         return _getUseSendBeacon({
           isIdentityEstablished: isIdentityEstablished
         });
+      },
+      getEdgeSubPath: function getEdgeSubPath() {
+        if (edgeSubPath) {
+          return edgeSubPath;
+        }
+        return "";
       },
       getUseIdThirdPartyDomain: function getUseIdThirdPartyDomain() {
         return shouldUseThirdPartyDomain;
@@ -5673,6 +5825,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createDataCollectionRequest = (function (_ref) {
     var dataCollectionRequestPayload = _ref.payload,
       datastreamIdOverride = _ref.datastreamIdOverride;
@@ -5738,6 +5891,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
 
   // This provides the base functionality that all types of
   // request payloads share.
@@ -5860,13 +6014,14 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var ASSURANCE_VALIDATION_SESSION_URL_PARAM = "adb_validation_sessionid";
   var ASSURANCE_VALIDATION_NAMESPACE = "validation.";
   var CLIENT_ID = "clientId";
   var getOrCreateAssuranceClientId = function getOrCreateAssuranceClientId(storage) {
     var clientId = storage.persistent.getItem(CLIENT_ID);
     if (!clientId) {
-      clientId = v4_1();
+      clientId = v4();
       storage.persistent.setItem(CLIENT_ID, clientId);
     }
     return clientId;
@@ -5876,14 +6031,14 @@
       createNamespacedStorage = _ref.createNamespacedStorage;
     var storage = createNamespacedStorage(ASSURANCE_VALIDATION_NAMESPACE);
     return function () {
-      var parsedQuery = reactorQueryString.parse(window.location.search);
+      var parsedQuery = queryString.parse(window.location.search);
       var validationSessionId = parsedQuery[ASSURANCE_VALIDATION_SESSION_URL_PARAM];
       if (!validationSessionId) {
         return "";
       }
       var clientId = getOrCreateAssuranceClientId(storage);
       var validationToken = validationSessionId + "|" + clientId;
-      return "&" + reactorQueryString.stringify({
+      return "&" + queryString.stringify({
         adobeAepValidationToken: validationToken
       });
     };
@@ -5900,6 +6055,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createGetIdentity = (function (_ref) {
     var sendEdgeNetworkRequest = _ref.sendEdgeNetworkRequest,
       createIdentityRequestPayload = _ref.createIdentityRequestPayload,
@@ -5932,6 +6088,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createIdentityRequest = (function (_ref) {
     var payload = _ref.payload,
       datastreamIdOverride = _ref.datastreamIdOverride;
@@ -5958,6 +6115,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createIdentityRequestPayload = (function (namespaces) {
     var content = {
       query: {
@@ -6021,6 +6179,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createIdentity = function createIdentity(_ref) {
     var config = _ref.config,
       logger = _ref.logger,
@@ -6113,10 +6272,10 @@
     });
   };
   createIdentity.namespace = "Identity";
-  createIdentity.configValidators = configValidators;
+  createIdentity.configValidators = configValidators$1;
 
   var createResultLogMessage = function createResultLogMessage(urlDestination, success) {
-    return "URL destination " + (success ? "succeeded" : "failed") + ": " + urlDestination.spec.url;
+    return "URL destination " + ("succeeded" ) + ": " + urlDestination.spec.url;
   };
   var injectProcessDestinations = (function (_ref) {
     var fireReferrerHideableImage = _ref.fireReferrerHideableImage,
@@ -6149,7 +6308,7 @@
       });
       return Promise.all(urlDestinations.map(function (urlDestination) {
         return fireReferrerHideableImage(urlDestination.spec).then(function () {
-          logger.info(createResultLogMessage(urlDestination, true));
+          logger.info(createResultLogMessage(urlDestination));
         }).catch(function () {
           // We intentionally do not throw an error if destinations fail. We
           // consider it a non-critical failure and therefore do not want it to
@@ -6211,6 +6370,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createAudiences = function createAudiences(_ref) {
     var logger = _ref.logger,
       fireReferrerHideableImage = _ref.fireReferrerHideableImage;
@@ -6270,6 +6430,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var SURFACE_REGEX = /^(\w+):\/\/([^/#]+)(\/[^#]*)?(#.*)?$/;
   var AUTHORITY_REGEX = /^(?:.*@)?(?:[a-z\d\u00a1-\uffff.-]+|\[[a-f\d:]+])(?::\d+)?$/;
   var PATH_REGEX = /^\/(?:[/\w\u00a1-\uffff-.~]|%[a-fA-F\d]{2})*$/;
@@ -6342,6 +6503,8 @@
   var isPageWideSurface = function isPageWideSurface(scope) {
     return !!scope && scope.indexOf(WEB + SURFACE_TYPE_DELIMITER) === 0 && scope.indexOf(FRAGMENT_DELIMITER) === -1;
   };
+
+  // eslint-disable-next-line default-param-last
   var normalizeSurfaces = function normalizeSurfaces() {
     var surfaces = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
     var getPageLocation = arguments.length > 1 ? arguments[1] : undefined;
@@ -6501,15 +6664,14 @@
   var DISMISS = "decisioning.propositionDismiss";
   var EVENT_TYPE_TRUE = 1;
 
-  var _eventTypeToPropositi, _propositionEventType;
   var PropositionEventType = {
     DISPLAY: "display",
     INTERACT: "interact",
     TRIGGER: "trigger",
     DISMISS: "dismiss"
   };
-  var eventTypeToPropositionEventTypeMapping = (_eventTypeToPropositi = {}, _defineProperty(_eventTypeToPropositi, DISPLAY, PropositionEventType.DISPLAY), _defineProperty(_eventTypeToPropositi, INTERACT, PropositionEventType.INTERACT), _defineProperty(_eventTypeToPropositi, TRIGGER, PropositionEventType.TRIGGER), _defineProperty(_eventTypeToPropositi, DISMISS, PropositionEventType.DISMISS), _eventTypeToPropositi);
-  (_propositionEventType = {}, _defineProperty(_propositionEventType, PropositionEventType.DISPLAY, DISPLAY), _defineProperty(_propositionEventType, PropositionEventType.INTERACT, INTERACT), _defineProperty(_propositionEventType, PropositionEventType.TRIGGER, TRIGGER), _defineProperty(_propositionEventType, PropositionEventType.DISMISS, DISMISS), _propositionEventType);
+  var eventTypeToPropositionEventTypeMapping = _defineProperty(_defineProperty(_defineProperty(_defineProperty({}, DISPLAY, PropositionEventType.DISPLAY), INTERACT, PropositionEventType.INTERACT), TRIGGER, PropositionEventType.TRIGGER), DISMISS, PropositionEventType.DISMISS);
+  _defineProperty(_defineProperty(_defineProperty(_defineProperty({}, PropositionEventType.DISPLAY, DISPLAY), PropositionEventType.INTERACT, INTERACT), PropositionEventType.TRIGGER, TRIGGER), PropositionEventType.DISMISS, DISMISS);
   var getPropositionEventType = function getPropositionEventType(eventType) {
     return eventTypeToPropositionEventTypeMapping[eventType];
   };
@@ -6555,6 +6717,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createComponent$3 = (function (_ref) {
     var getPageLocation = _ref.getPageLocation,
       logger = _ref.logger,
@@ -6569,9 +6732,13 @@
       setTargetMigration = _ref.setTargetMigration,
       mergeDecisionsMeta = _ref.mergeDecisionsMeta,
       renderedPropositions = _ref.renderedPropositions,
-      onDecisionHandler = _ref.onDecisionHandler;
+      onDecisionHandler = _ref.onDecisionHandler,
+      handleConsentFlicker = _ref.handleConsentFlicker;
     return {
       lifecycle: {
+        onComponentsRegistered: function onComponentsRegistered() {
+          handleConsentFlicker();
+        },
         onDecision: onDecisionHandler,
         onBeforeRequest: function onBeforeRequest(_ref2) {
           var request = _ref2.request;
@@ -6689,13 +6856,17 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createFragment = (function (content) {
     return createNode(DIV, {}, {
       innerHTML: content
     });
   });
 
-  var css_escape = createCommonjsModule(function (module, exports) {
+  var css_escape = {exports: {}};
+
+  /*! https://mths.be/cssescape v1.5.1 by @mathias | MIT license */
+  (function (module, exports) {
     (function (root, factory) {
       // https://github.com/umdjs/umd/blob/master/returnExports.js
       {
@@ -6720,7 +6891,7 @@
         var firstCodeUnit = string.charCodeAt(0);
         while (++index < length) {
           codeUnit = string.charCodeAt(index);
-          // Note: thereâ€™s no need to special-case astral symbols, surrogate
+          // Note: there’s no need to special-case astral symbols, surrogate
           // pairs, or lone surrogates.
 
           // If the character is NULL (U+0000), then the REPLACEMENT CHARACTER
@@ -6731,13 +6902,13 @@
           }
           if (
           // If the character is in the range [\1-\1F] (U+0001 to U+001F) or is
-          // U+007F, [â€¦]
+          // U+007F, […]
           codeUnit >= 0x0001 && codeUnit <= 0x001F || codeUnit == 0x007F ||
           // If the character is the first character and is in the range [0-9]
-          // (U+0030 to U+0039), [â€¦]
+          // (U+0030 to U+0039), […]
           index == 0 && codeUnit >= 0x0030 && codeUnit <= 0x0039 ||
           // If the character is the second character and is in the range [0-9]
-          // (U+0030 to U+0039) and the first character is a `-` (U+002D), [â€¦]
+          // (U+0030 to U+0039) and the first character is a `-` (U+002D), […]
 
           index == 1 && codeUnit >= 0x0030 && codeUnit <= 0x0039 && firstCodeUnit == 0x002D) {
             // https://drafts.csswg.org/cssom/#escape-a-character-as-code-point
@@ -6746,7 +6917,7 @@
           }
           if (
           // If the character is the first character and is a `-` (U+002D), and
-          // there is no second character, [â€¦]
+          // there is no second character, […]
           index == 0 && length == 1 && codeUnit == 0x002D) {
             result += '\\' + string.charAt(index);
             continue;
@@ -6755,7 +6926,7 @@
           // If the character is not handled by one of the above rules and is
           // greater than or equal to U+0080, is `-` (U+002D) or `_` (U+005F), or
           // is in one of the ranges [0-9] (U+0030 to U+0039), [A-Z] (U+0041 to
-          // U+005A), or [a-z] (U+0061 to U+007A), [â€¦]
+          // U+005A), or [a-z] (U+0061 to U+007A), […]
           if (codeUnit >= 0x0080 || codeUnit == 0x002D || codeUnit == 0x005F || codeUnit >= 0x0030 && codeUnit <= 0x0039 || codeUnit >= 0x0041 && codeUnit <= 0x005A || codeUnit >= 0x0061 && codeUnit <= 0x007A) {
             // the character itself
             result += string.charAt(index);
@@ -6774,7 +6945,9 @@
       root.CSS.escape = cssEscape;
       return cssEscape;
     });
-  });
+  })(css_escape);
+  var css_escapeExports = css_escape.exports;
+  var escape$1 = /*@__PURE__*/getDefaultExportFromCjs(css_escapeExports);
 
   /*
   Copyright 2019 Adobe. All rights reserved.
@@ -6787,6 +6960,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var EQ_START = ":eq(";
   var EQ_PATTERN = /:eq\((\d+)\)/g;
   var isNotEqSelector = function isNotEqSelector(str) {
@@ -6803,7 +6977,7 @@
   // Please check:  https://www.w3.org/TR/css-syntax-3/#escaping
   // CSS.escape() polyfill can be found here: https://github.com/mathiasbynens/CSS.escape
   var replaceIdentifier = function replaceIdentifier(_, $1, $2) {
-    return "" + $1 + css_escape($2);
+    return "" + $1 + escape$1($2);
   };
   var escapeIdentifiersInSelector = function escapeIdentifiersInSelector(selector) {
     return selector.replace(CSS_IDENTIFIER_PATTERN, replaceIdentifier);
@@ -7015,6 +7189,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var insertAfter = (function (container, element) {
     if (!container) {
       return;
@@ -7036,6 +7211,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var insertBefore = (function (container, element) {
     if (!container) {
       return;
@@ -7057,6 +7233,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var getChildren = (function (element) {
     var children = element.children;
     if (children) {
@@ -7076,6 +7253,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var getChildNodes = (function (element) {
     var childNodes = element.childNodes;
     if (childNodes) {
@@ -7236,6 +7414,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var isImage = function isImage(element) {
     return element.tagName === IMG;
   };
@@ -7265,6 +7444,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var is$1 = function is(element, tagName) {
     return element.tagName === tagName;
   };
@@ -7326,8 +7506,8 @@
    * @constructor
    * @param {Function} fn
    */
-  function Promise$1(fn) {
-    if (!(this instanceof Promise$1)) throw new TypeError('Promises must be constructed via new');
+  function Promise$2(fn) {
+    if (!(this instanceof Promise$2)) throw new TypeError('Promises must be constructed via new');
     if (typeof fn !== 'function') throw new TypeError('not a function');
     /** @type {!number} */
     this._state = 0;
@@ -7348,7 +7528,7 @@
       return;
     }
     self._handled = true;
-    Promise$1._immediateFn(function () {
+    Promise$2._immediateFn(function () {
       var cb = self._state === 1 ? deferred.onFulfilled : deferred.onRejected;
       if (cb === null) {
         (self._state === 1 ? resolve : reject)(deferred.promise, self._value);
@@ -7370,7 +7550,7 @@
       if (newValue === self) throw new TypeError('A promise cannot be resolved with itself.');
       if (newValue && (_typeof(newValue) === 'object' || typeof newValue === 'function')) {
         var then = newValue.then;
-        if (newValue instanceof Promise$1) {
+        if (newValue instanceof Promise$2) {
           self._state = 3;
           self._value = newValue;
           finale(self);
@@ -7394,9 +7574,9 @@
   }
   function finale(self) {
     if (self._state === 2 && self._deferreds.length === 0) {
-      Promise$1._immediateFn(function () {
+      Promise$2._immediateFn(function () {
         if (!self._handled) {
-          Promise$1._unhandledRejectionFn(self._value);
+          Promise$2._unhandledRejectionFn(self._value);
         }
       });
     }
@@ -7439,18 +7619,18 @@
       reject(self, ex);
     }
   }
-  Promise$1.prototype['catch'] = function (onRejected) {
+  Promise$2.prototype['catch'] = function (onRejected) {
     return this.then(null, onRejected);
   };
-  Promise$1.prototype.then = function (onFulfilled, onRejected) {
+  Promise$2.prototype.then = function (onFulfilled, onRejected) {
     // @ts-ignore
     var prom = new this.constructor(noop);
     handle(this, new Handler(onFulfilled, onRejected, prom));
     return prom;
   };
-  Promise$1.prototype['finally'] = finallyConstructor;
-  Promise$1.all = function (arr) {
-    return new Promise$1(function (resolve, reject) {
+  Promise$2.prototype['finally'] = finallyConstructor;
+  Promise$2.all = function (arr) {
+    return new Promise$2(function (resolve, reject) {
       if (!isArray(arr)) {
         return reject(new TypeError('Promise.all accepts an array'));
       }
@@ -7481,32 +7661,32 @@
       }
     });
   };
-  Promise$1.resolve = function (value) {
-    if (value && _typeof(value) === 'object' && value.constructor === Promise$1) {
+  Promise$2.resolve = function (value) {
+    if (value && _typeof(value) === 'object' && value.constructor === Promise$2) {
       return value;
     }
-    return new Promise$1(function (resolve) {
+    return new Promise$2(function (resolve) {
       resolve(value);
     });
   };
-  Promise$1.reject = function (value) {
-    return new Promise$1(function (resolve, reject) {
+  Promise$2.reject = function (value) {
+    return new Promise$2(function (resolve, reject) {
       reject(value);
     });
   };
-  Promise$1.race = function (arr) {
-    return new Promise$1(function (resolve, reject) {
+  Promise$2.race = function (arr) {
+    return new Promise$2(function (resolve, reject) {
       if (!isArray(arr)) {
         return reject(new TypeError('Promise.race accepts an array'));
       }
       for (var i = 0, len = arr.length; i < len; i++) {
-        Promise$1.resolve(arr[i]).then(resolve, reject);
+        Promise$2.resolve(arr[i]).then(resolve, reject);
       }
     });
   };
 
   // Use polyfill for setImmediate for performance gains
-  Promise$1._immediateFn =
+  Promise$2._immediateFn =
   // @ts-ignore
   typeof setImmediate === 'function' && function (fn) {
     // @ts-ignore
@@ -7514,20 +7694,51 @@
   } || function (fn) {
     setTimeoutFunc(fn, 0);
   };
-  Promise$1._unhandledRejectionFn = function _unhandledRejectionFn(err) {
+  Promise$2._unhandledRejectionFn = function _unhandledRejectionFn(err) {
     if (typeof console !== 'undefined' && console) {
       console.warn('Possible Unhandled Promise Rejection:', err); // eslint-disable-line no-console
     }
   };
 
+  var src = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    default: Promise$2
+  });
+
+  var require$$0 = /*@__PURE__*/getAugmentedNamespace(src);
+
+  /***************************************************************************************
+   * (c) 2017 Adobe. All rights reserved.
+   * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+   * you may not use this file except in compliance with the License. You may obtain a copy
+   * of the License at http://www.apache.org/licenses/LICENSE-2.0
+   *
+   * Unless required by applicable law or agreed to in writing, software distributed under
+   * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+   * OF ANY KIND, either express or implied. See the License for the specific language
+   * governing permissions and limitations under the License.
+   ****************************************************************************************/
+
   // For building Turbine we are using Rollup. For running the turbine tests we are using
   // Karma + Webpack. You need to specify the default import when using promise-polyfill`
   // with Webpack 2+. We need `require('promise-polyfill').default` for running the tests
   // and `require('promise-polyfill')` for building Turbine.
-  var reactorPromise = typeof window !== 'undefined' && window.Promise || typeof commonjsGlobal !== 'undefined' && commonjsGlobal.Promise || Promise$1.default || Promise$1;
+  var reactorPromise = typeof window !== 'undefined' && window.Promise || typeof commonjsGlobal !== 'undefined' && commonjsGlobal.Promise || require$$0.default || require$$0;
 
+  /***************************************************************************************
+   * (c) 2017 Adobe. All rights reserved.
+   * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+   * you may not use this file except in compliance with the License. You may obtain a copy
+   * of the License at http://www.apache.org/licenses/LICENSE-2.0
+   *
+   * Unless required by applicable law or agreed to in writing, software distributed under
+   * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+   * OF ANY KIND, either express or implied. See the License for the specific language
+   * governing permissions and limitations under the License.
+   ****************************************************************************************/
+  var Promise$1 = reactorPromise;
   var getPromise = function getPromise(url, script) {
-    return new reactorPromise(function (resolve, reject) {
+    return new Promise$1(function (resolve, reject) {
       script.onload = function () {
         resolve(script);
       };
@@ -7544,6 +7755,7 @@
     document.getElementsByTagName('head')[0].appendChild(script);
     return promise;
   };
+  var loadScript = /*@__PURE__*/getDefaultExportFromCjs(reactorLoadScript);
 
   var is = function is(element, tagName) {
     return !!element && element.tagName === tagName;
@@ -7609,7 +7821,7 @@
     });
   };
   var executeRemoteScripts = function executeRemoteScripts(urls) {
-    return Promise.all(urls.map(reactorLoadScript));
+    return Promise.all(urls.map(loadScript));
   };
 
   /*
@@ -7623,6 +7835,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var appendHtml = (function (container, html) {
     var fragment = createFragment(html);
     addNonceToInlineStyleElements(fragment);
@@ -7648,6 +7861,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var clear = function clear(container) {
     // We want to remove ALL nodes, text, comments etc
     var childNodes = getChildNodes(container);
@@ -7669,6 +7883,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var prependHtml = (function (container, html) {
     var fragment = createFragment(html);
     addNonceToInlineStyleElements(fragment);
@@ -7707,6 +7922,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var insertHtmlBefore = (function (container, html) {
     var fragment = createFragment(html);
     addNonceToInlineStyleElements(fragment);
@@ -7732,6 +7948,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var replaceHtml = (function (container, html) {
     insertHtmlBefore(container, html);
     removeNode(container);
@@ -7748,6 +7965,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var insertHtmlAfter = (function (container, html) {
     var fragment = createFragment(html);
     addNonceToInlineStyleElements(fragment);
@@ -7782,6 +8000,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var setAttributes = (function (container, attributes) {
     Object.keys(attributes).forEach(function (key) {
       setAttribute(container, key, attributes[key]);
@@ -7799,6 +8018,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var swapImage = (function (container, url) {
     if (!isImage(container)) {
       return;
@@ -7825,6 +8045,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var rearrangeChildren = (function (container, _ref) {
     var from = _ref.from,
       to = _ref.to;
@@ -7854,6 +8075,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var renderContent = function renderContent(elements, content, renderFunc) {
     var executions = elements.map(function (element) {
       return renderFunc(element, content);
@@ -7891,6 +8113,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var initDomActionsModules = (function () {
     return {
       setHtml: createAction(setHtml),
@@ -7967,16 +8190,22 @@
       mergeQuery = _ref.mergeQuery,
       processPropositions = _ref.processPropositions,
       createProposition = _ref.createProposition,
-      notificationHandler = _ref.notificationHandler;
+      notificationHandler = _ref.notificationHandler,
+      consent = _ref.consent;
     return function (_ref2) {
       var cacheUpdate = _ref2.cacheUpdate,
         personalizationDetails = _ref2.personalizationDetails,
         event = _ref2.event,
         onResponse = _ref2.onResponse;
-      if (personalizationDetails.isRenderDecisions()) {
-        hideContainers(prehidingStyle);
-      } else {
-        showContainers();
+      var _consent$current = consent.current(),
+        state = _consent$current.state,
+        wasSet = _consent$current.wasSet;
+      if (!(state === "out" && wasSet)) {
+        if (personalizationDetails.isRenderDecisions()) {
+          hideContainers(prehidingStyle);
+        } else {
+          showContainers();
+        }
       }
       mergeQuery(event, personalizationDetails.createQueryDetails());
 
@@ -8037,6 +8266,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var matchesSelectorWithEq = (function (selector, element) {
     if (isNotEqSelector(selector)) {
       return matchesSelector(selector, element);
@@ -8217,6 +8447,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createOnClickHandler = (function (_ref) {
     var mergeDecisionsMeta = _ref.mergeDecisionsMeta,
       collectClicks = _ref.collectClicks,
@@ -8263,6 +8494,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createViewCacheManager = (function (_ref) {
     var createProposition = _ref.createProposition;
     var cacheUpdateCreatedAtLeastOnce = false;
@@ -8297,7 +8529,7 @@
       // propositions the old "cart" view propositions will remain.
       viewStoragePromise = viewStoragePromise.then(function (oldViewStorage) {
         return updateCacheDeferred.promise.then(function (newViewStorage) {
-          return reactorObjectAssign({}, oldViewStorage, newViewStorage);
+          return assign$1({}, oldViewStorage, newViewStorage);
         }).catch(function () {
           return oldViewStorage;
         });
@@ -8554,6 +8786,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createSetTargetMigration = (function (_ref) {
     var targetMigrationEnabled = _ref.targetMigrationEnabled;
     if (targetMigrationEnabled) {
@@ -8579,6 +8812,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var ACTION_CUSTOM_CODE = "customCode";
   var TARGET_BODY_SELECTOR = "BODY > *:eq(0)";
   var remapCustomCodeOffers = (function (action) {
@@ -8590,7 +8824,7 @@
     if (selector !== TARGET_BODY_SELECTOR) {
       return action;
     }
-    return reactorObjectAssign({}, action, {
+    return assign$1({}, action, {
       selector: "BODY"
     });
   });
@@ -8606,6 +8840,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
 
   /**
    * Returns whether a string value is blank. Also returns true if the value is not a string.
@@ -8627,6 +8862,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var APPEND_HTML = "appendHtml";
   var HEAD_TAGS_SELECTOR = "SCRIPT,LINK,STYLE";
   var filterHeadContent = function filterHeadContent(content) {
@@ -8637,7 +8873,7 @@
     }).join("");
   };
   var remapHeadOffers = (function (action) {
-    var result = reactorObjectAssign({}, action);
+    var result = assign$1({}, action);
     var content = result.content,
       selector = result.selector;
     if (isBlankString(content)) {
@@ -8672,7 +8908,7 @@
         return action;
       }
       return preprocessors.reduce(function (processed, fn) {
-        return reactorObjectAssign(processed, fn(processed));
+        return assign$1(processed, fn(processed));
       }, action);
     };
   });
@@ -8683,9 +8919,9 @@
     var createItem = function createItem(item, proposition) {
       var schema = item.schema,
         data = item.data,
-        _item$characteristics = item.characteristics;
-      _item$characteristics = _item$characteristics === void 0 ? {} : _item$characteristics;
-      var trackingLabel = _item$characteristics.trackingLabel;
+        _item$characteristics = item.characteristics,
+        _item$characteristics2 = _item$characteristics === void 0 ? {} : _item$characteristics,
+        trackingLabel = _item$characteristics2.trackingLabel;
       var processedData = preprocess(data);
       return {
         getSchema: function getSchema() {
@@ -8719,9 +8955,9 @@
         _payload$items = payload.items,
         items = _payload$items === void 0 ? [] : _payload$items;
       var _ref2 = scopeDetails || {},
-        _ref2$characteristics = _ref2.characteristics;
-      _ref2$characteristics = _ref2$characteristics === void 0 ? {} : _ref2$characteristics;
-      var scopeType = _ref2$characteristics.scopeType;
+        _ref2$characteristics = _ref2.characteristics,
+        _ref2$characteristics2 = _ref2$characteristics === void 0 ? {} : _ref2$characteristics,
+        scopeType = _ref2$characteristics2.scopeType;
       return {
         getScope: function getScope() {
           if (!scope) {
@@ -8967,7 +9203,6 @@
           // there is a redirect.
         });
       };
-
       return {
         render: render,
         setRenderAttempted: true,
@@ -9311,7 +9546,7 @@
     var interaction;
     var link;
     if (isNonEmptyArray(hrefParts)) {
-      var queryParams = reactorQueryString.parse(hrefParts[1]);
+      var queryParams = queryString.parse(hrefParts[1]);
       interaction = queryParams.interaction || "";
       link = decodeURIComponent(queryParams.link || "");
     }
@@ -9346,9 +9581,7 @@
       }
       // Return a promise that never resolves because redirects never complete
       // within the current page.
-      return new Promise(function () {
-        return undefined;
-      });
+      return new Promise(function () {});
     };
   });
 
@@ -9426,7 +9659,7 @@
         style = _webParameters$id$sty === void 0 ? {} : _webParameters$id$sty,
         _webParameters$id$par = _webParameters$id.params,
         params = _webParameters$id$par === void 0 ? {} : _webParameters$id$par;
-      reactorObjectAssign(element.style, style);
+      assign$1(element.style, style);
       var _params$parentElement = params.parentElement,
         parentElement = _params$parentElement === void 0 ? "body" : _params$parentElement,
         _params$insertionMeth = params.insertionMethod,
@@ -9531,13 +9764,12 @@
     return true;
   };
   var generateWebParameters = function generateWebParameters(mobileParameters) {
-    var _ref3;
     if (!mobileParameters) {
       return undefined;
     }
     var _mobileParameters$uiT2 = mobileParameters.uiTakeover,
       uiTakeover = _mobileParameters$uiT2 === void 0 ? false : _mobileParameters$uiT2;
-    return _ref3 = {}, _defineProperty(_ref3, IFRAME_ID, {
+    return _defineProperty(_defineProperty(_defineProperty({}, IFRAME_ID, {
       style: {
         border: "none",
         width: "100%",
@@ -9548,22 +9780,24 @@
         parentElement: "#alloy-messaging-container",
         insertionMethod: "appendChild"
       }
-    }), _defineProperty(_ref3, MESSAGING_CONTAINER_ID, {
+    }), MESSAGING_CONTAINER_ID, {
       style: buildStyleFromMobileParameters(mobileParameters),
       params: {
         enabled: true,
         parentElement: "body",
         insertionMethod: "appendChild"
       }
-    }), _defineProperty(_ref3, OVERLAY_CONTAINER_ID, {
+    }), OVERLAY_CONTAINER_ID, {
       style: mobileOverlay(mobileParameters),
       params: {
         enabled: uiTakeover === true,
         parentElement: "body",
         insertionMethod: "appendChild"
       }
-    }), _ref3;
+    });
   };
+
+  // eslint-disable-next-line default-param-last
   var displayHTMLContentInIframe = function displayHTMLContentInIframe() {
     var settings = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var interact = arguments.length > 1 ? arguments[1] : undefined;
@@ -9666,11 +9900,37 @@
     };
   });
 
+  /*
+  Copyright 2024 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+  var createHandleConsentFlicker = (function (_ref) {
+    var showContainers = _ref.showContainers,
+      consent = _ref.consent;
+    return function () {
+      var _consent$current = consent.current(),
+        state = _consent$current.state,
+        wasSet = _consent$current.wasSet;
+      if (state === OUT && wasSet) {
+        showContainers();
+      } else {
+        consent.awaitConsent().catch(showContainers);
+      }
+    };
+  });
+
   var createPersonalization = function createPersonalization(_ref) {
-    var _schemaProcessors;
     var config = _ref.config,
       logger = _ref.logger,
-      eventManager = _ref.eventManager;
+      eventManager = _ref.eventManager,
+      consent = _ref.consent;
     var targetMigrationEnabled = config.targetMigrationEnabled,
       prehidingStyle = config.prehidingStyle;
     var collect = createCollect({
@@ -9694,21 +9954,21 @@
       createProposition: createProposition
     });
     var executeRedirect = createRedirect(window);
-    var schemaProcessors = (_schemaProcessors = {}, _defineProperty(_schemaProcessors, DEFAULT_CONTENT_ITEM, processDefaultContent), _defineProperty(_schemaProcessors, DOM_ACTION, createProcessDomAction({
+    var schemaProcessors = _defineProperty(_defineProperty(_defineProperty(_defineProperty(_defineProperty({}, DEFAULT_CONTENT_ITEM, processDefaultContent), DOM_ACTION, createProcessDomAction({
       modules: domActionsModules,
       logger: logger,
       storeClickMetrics: storeClickMetrics
-    })), _defineProperty(_schemaProcessors, HTML_CONTENT_ITEM, createProcessHtmlContent({
+    })), HTML_CONTENT_ITEM, createProcessHtmlContent({
       modules: domActionsModules,
       logger: logger
-    })), _defineProperty(_schemaProcessors, REDIRECT_ITEM, createProcessRedirect({
+    })), REDIRECT_ITEM, createProcessRedirect({
       logger: logger,
       executeRedirect: executeRedirect,
       collect: collect
-    })), _defineProperty(_schemaProcessors, MESSAGE_IN_APP, createProcessInAppMessage({
+    })), MESSAGE_IN_APP, createProcessInAppMessage({
       modules: initInAppMessageActionsModules(collect),
       logger: logger
-    })), _schemaProcessors);
+    }));
     var processPropositions = createProcessPropositions({
       schemaProcessors: schemaProcessors,
       logger: logger
@@ -9722,7 +9982,8 @@
       mergeQuery: mergeQuery,
       processPropositions: processPropositions,
       createProposition: createProposition,
-      notificationHandler: notificationHandler
+      notificationHandler: notificationHandler,
+      consent: consent
     });
     var onClickHandler = createOnClickHandler({
       mergeDecisionsMeta: mergeDecisionsMeta,
@@ -9748,6 +10009,10 @@
       createProposition: createProposition,
       notificationHandler: notificationHandler
     });
+    var handleConsentFlicker = createHandleConsentFlicker({
+      showContainers: showContainers,
+      consent: consent
+    });
     return createComponent$3({
       getPageLocation: getPageLocation,
       logger: logger,
@@ -9762,7 +10027,8 @@
       setTargetMigration: setTargetMigration,
       mergeDecisionsMeta: mergeDecisionsMeta,
       renderedPropositions: renderedPropositions,
-      onDecisionHandler: onDecisionHandler
+      onDecisionHandler: onDecisionHandler,
+      handleConsentFlicker: handleConsentFlicker
     });
   };
   createPersonalization.namespace = "Personalization";
@@ -9782,6 +10048,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var injectWeb = (function (window) {
     return function (xdm) {
       var web = {
@@ -9809,6 +10076,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var getScreenOrientationViaProperty = function getScreenOrientationViaProperty(window) {
     var orientation = window.screen.orientation;
     if (orientation == null || orientation.type == null) {
@@ -9871,12 +10139,13 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var injectEnvironment = (function (window) {
     return function (xdm) {
-      var _window$document$docu = window.document.documentElement;
-      _window$document$docu = _window$document$docu === void 0 ? {} : _window$document$docu;
-      var clientWidth = _window$document$docu.clientWidth,
-        clientHeight = _window$document$docu.clientHeight;
+      var _window$document$docu = window.document.documentElement,
+        _window$document$docu2 = _window$document$docu === void 0 ? {} : _window$document$docu,
+        clientWidth = _window$document$docu2.clientWidth,
+        clientHeight = _window$document$docu2.clientHeight;
       var environment = {
         type: "browser"
       };
@@ -9937,6 +10206,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var injectTimestamp = (function (dateProvider) {
     return function (xdm) {
       var timestamp = dateProvider().toISOString();
@@ -9975,7 +10245,7 @@
   // The __VERSION__ keyword will be replace at alloy build time with the package.json version.
   // see babel-plugin-version
 
-  var libraryVersion = "2.19.2";
+  var libraryVersion = "2.20.0";
 
   /*
   Copyright 2019 Adobe. All rights reserved.
@@ -10010,6 +10280,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createComponent$2 = (function (config, logger, optionalContexts, requiredContexts) {
     var configuredContexts = config.context;
     var contexts = flatMap(configuredContexts, function (context, i) {
@@ -10261,6 +10532,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createConsentRequestPayload = (function () {
     var content = {};
     var payload = createRequestPayload({
@@ -10291,6 +10563,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createConsentRequest = (function (_ref) {
     var payload = _ref.payload,
       datastreamIdOverride = _ref.datastreamIdOverride;
@@ -10317,6 +10590,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createStoredConsent = (function (_ref) {
     var parseConsentCookie = _ref.parseConsentCookie,
       orgId = _ref.orgId,
@@ -10344,6 +10618,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var injectSendSetConsentRequest = (function (_ref) {
     var createConsentRequestPayload = _ref.createConsentRequestPayload,
       createConsentRequest = _ref.createConsentRequest,
@@ -10434,6 +10709,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createPrivacy = function createPrivacy(_ref) {
     var config = _ref.config,
       consent = _ref.consent,
@@ -10484,9 +10760,10 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createEventMergeId = (function () {
     return {
-      eventMergeId: v4_1()
+      eventMergeId: v4()
     };
   });
 
@@ -10524,6 +10801,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createEventMerge = function createEventMerge() {
     return createComponent({
       createEventMergeId: createEventMergeId
@@ -10543,10 +10821,12 @@
       }
       resultConfig[key] = value.toString();
     });
+    var components = componentRegistry.getComponentNames();
     return {
       version: libraryVersion,
       configs: resultConfig,
-      commands: allCommands
+      commands: allCommands,
+      components: components
     };
   };
   var createLibraryInfo = function createLibraryInfo(_ref2) {
@@ -10862,7 +11142,7 @@
       }
     };
   }
-  var MATCHERS = (_MATCHERS = {}, _defineProperty(_MATCHERS, MatcherType.EQUALS, createEquals()), _defineProperty(_MATCHERS, MatcherType.NOT_EQUALS, createNotEquals()), _defineProperty(_MATCHERS, MatcherType.EXISTS, createExists()), _defineProperty(_MATCHERS, MatcherType.NOT_EXISTS, createNotExists()), _defineProperty(_MATCHERS, MatcherType.GREATER_THAN, createGreaterThan()), _defineProperty(_MATCHERS, MatcherType.GREATER_THAN_OR_EQUAL_TO, createGreaterThanEquals()), _defineProperty(_MATCHERS, MatcherType.LESS_THAN, createLessThan()), _defineProperty(_MATCHERS, MatcherType.LESS_THAN_OR_EQUAL_TO, createLessThanEquals()), _defineProperty(_MATCHERS, MatcherType.CONTAINS, createContains()), _defineProperty(_MATCHERS, MatcherType.NOT_CONTAINS, createNotContains()), _defineProperty(_MATCHERS, MatcherType.STARTS_WITH, createStartsWith()), _defineProperty(_MATCHERS, MatcherType.ENDS_WITH, createEndsWith()), _MATCHERS);
+  var MATCHERS = (_MATCHERS = {}, _defineProperty(_defineProperty(_defineProperty(_defineProperty(_defineProperty(_defineProperty(_defineProperty(_defineProperty(_defineProperty(_defineProperty(_MATCHERS, MatcherType.EQUALS, createEquals()), MatcherType.NOT_EQUALS, createNotEquals()), MatcherType.EXISTS, createExists()), MatcherType.NOT_EXISTS, createNotExists()), MatcherType.GREATER_THAN, createGreaterThan()), MatcherType.GREATER_THAN_OR_EQUAL_TO, createGreaterThanEquals()), MatcherType.LESS_THAN, createLessThan()), MatcherType.LESS_THAN_OR_EQUAL_TO, createLessThanEquals()), MatcherType.CONTAINS, createContains()), MatcherType.NOT_CONTAINS, createNotContains()), _defineProperty(_defineProperty(_MATCHERS, MatcherType.STARTS_WITH, createStartsWith()), MatcherType.ENDS_WITH, createEndsWith()));
   function getMatcher(key) {
     return MATCHERS[key];
   }
@@ -11288,10 +11568,9 @@
     };
   });
 
-  var _adapters;
   var CJM_IN_APP_MESSAGE_TYPE = "cjmiam";
   var SCHEMA = "schema";
-  var adapters = (_adapters = {}, _defineProperty(_adapters, CJM_IN_APP_MESSAGE_TYPE, inAppMessageConsequenceAdapter), _defineProperty(_adapters, SCHEMA, schemaTypeConsequenceAdapter), _adapters);
+  var adapters = _defineProperty(_defineProperty({}, CJM_IN_APP_MESSAGE_TYPE, inAppMessageConsequenceAdapter), SCHEMA, schemaTypeConsequenceAdapter);
   var createConsequenceAdapter = (function () {
     return function (consequence) {
       var id = consequence.id,
@@ -11512,7 +11791,6 @@
     };
     setStorage(storage);
     var addEvent = function addEvent(event, eventType, eventId, action) {
-      var _objectSpread2$1;
       if (!eventType || !eventId) {
         return undefined;
       }
@@ -11524,7 +11802,7 @@
       var timestamp = new Date().getTime();
       var firstTimestamp = existingEvent ? existingEvent.firstTimestamp || existingEvent.timestamp : timestamp;
       events[eventType][eventId] = {
-        event: _objectSpread2(_objectSpread2({}, event), {}, (_objectSpread2$1 = {}, _defineProperty(_objectSpread2$1, prefixed("id"), eventId), _defineProperty(_objectSpread2$1, prefixed("eventType"), eventType), _defineProperty(_objectSpread2$1, prefixed("action"), action), _objectSpread2$1)),
+        event: _objectSpread2(_objectSpread2({}, event), {}, _defineProperty(_defineProperty(_defineProperty({}, prefixed("id"), eventId), prefixed("eventType"), eventType), prefixed("action"), action)),
         firstTimestamp: firstTimestamp,
         timestamp: timestamp,
         count: count + 1
@@ -11910,7 +12188,6 @@
           }
         },
         onBeforeEvent: function onBeforeEvent(_ref3) {
-          var _objectSpread2$1;
           var event = _ref3.event,
             renderDecisions = _ref3.renderDecisions,
             _ref3$personalization = _ref3.personalization,
@@ -11925,7 +12202,7 @@
             applyResponse: applyResponse,
             event: event,
             personalization: personalization,
-            decisionContext: contextProvider.getContext(_objectSpread2((_objectSpread2$1 = {}, _defineProperty(_objectSpread2$1, CONTEXT_KEY.TYPE, CONTEXT_EVENT_TYPE.EDGE), _defineProperty(_objectSpread2$1, CONTEXT_KEY.SOURCE, CONTEXT_EVENT_SOURCE.REQUEST), _objectSpread2$1), decisionContext))
+            decisionContext: contextProvider.getContext(_objectSpread2(_defineProperty(_defineProperty({}, CONTEXT_KEY.TYPE, CONTEXT_EVENT_TYPE.EDGE), CONTEXT_KEY.SOURCE, CONTEXT_EVENT_SOURCE.REQUEST), decisionContext))
           }));
           eventRegistry.addExperienceEdgeEvent(event);
         }
@@ -11933,7 +12210,6 @@
       commands: {
         evaluateRulesets: {
           run: function run(_ref4) {
-            var _objectSpread3;
             var renderDecisions = _ref4.renderDecisions,
               _ref4$personalization = _ref4.personalization,
               personalization = _ref4$personalization === void 0 ? {} : _ref4$personalization;
@@ -11941,7 +12217,7 @@
               decisionContext = _personalization$deci2 === void 0 ? {} : _personalization$deci2;
             return evaluateRulesetsCommand.run({
               renderDecisions: renderDecisions,
-              decisionContext: _objectSpread2((_objectSpread3 = {}, _defineProperty(_objectSpread3, CONTEXT_KEY.TYPE, CONTEXT_EVENT_TYPE.RULES_ENGINE), _defineProperty(_objectSpread3, CONTEXT_KEY.SOURCE, CONTEXT_EVENT_SOURCE.REQUEST), _objectSpread3), decisionContext),
+              decisionContext: _objectSpread2(_defineProperty(_defineProperty({}, CONTEXT_KEY.TYPE, CONTEXT_EVENT_TYPE.RULES_ENGINE), CONTEXT_KEY.SOURCE, CONTEXT_EVENT_SOURCE.REQUEST), decisionContext),
               applyResponse: applyResponse
             });
           },
@@ -11985,6 +12261,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createMachineLearning = function createMachineLearning() {
     return {
       lifecycle: {
@@ -11996,7 +12273,24 @@
   createMachineLearning.namespace = "MachineLearning";
 
   /*
-  Copyright 2019 Adobe. All rights reserved.
+  Copyright 2024 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+  var PlaybackState = {
+    MAIN: "main",
+    AD: "ad",
+    COMPLETED: "completed"
+  };
+
+  /*
+  Copyright 2023 Adobe. All rights reserved.
   This file is licensed to you under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License. You may obtain a copy
   of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -12007,9 +12301,1334 @@
   governing permissions and limitations under the License.
   */
 
+  var createMediaSessionCacheManager = (function () {
+    var mediaSessionCache;
+    var getSession = function getSession(playerId) {
+      return mediaSessionCache[playerId] || {};
+    };
+    var savePing = function savePing(_ref) {
+      var playerId = _ref.playerId,
+        pingId = _ref.pingId,
+        playbackState = _ref.playbackState;
+      if (!mediaSessionCache[playerId]) {
+        return;
+      }
+      if (mediaSessionCache[playerId].pingId) {
+        clearTimeout(mediaSessionCache[playerId].pingId);
+      }
+      mediaSessionCache[playerId].pingId = pingId;
+      mediaSessionCache[playerId].playbackState = playbackState;
+    };
+    var stopPing = function stopPing(_ref2) {
+      var playerId = _ref2.playerId;
+      var sessionDetails = mediaSessionCache[playerId];
+      if (!sessionDetails) {
+        return;
+      }
+      clearTimeout(sessionDetails.pingId);
+      sessionDetails.pingId = null;
+      sessionDetails.playbackState = PlaybackState.COMPLETED;
+    };
+    var storeSession = function storeSession(_ref3) {
+      var playerId = _ref3.playerId,
+        sessionDetails = _ref3.sessionDetails;
+      if (mediaSessionCache === undefined) {
+        mediaSessionCache = {};
+      }
+      mediaSessionCache[playerId] = sessionDetails;
+    };
+    return {
+      getSession: getSession,
+      storeSession: storeSession,
+      stopPing: stopPing,
+      savePing: savePing
+    };
+  });
+
+  /*
+  Copyright 2023 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+  var MediaEvents = {
+    PAUSE: "media.pauseStart",
+    PLAY: "media.play",
+    BUFFER_START: "media.bufferStart",
+    AD_START: "media.adStart",
+    Ad_BREAK_START: "media.adBreakStart",
+    SESSION_END: "media.sessionEnd",
+    SESSION_START: "media.sessionStart",
+    SESSION_COMPLETE: "media.sessionComplete",
+    PING: "media.ping",
+    AD_BREAK_COMPLETE: "media.adBreakComplete",
+    AD_COMPLETE: "media.adComplete",
+    AD_SKIP: "media.adSkip",
+    BITRATE_CHANGE: "media.bitrateChange",
+    CHAPTER_COMPLETE: "media.chapterComplete",
+    CHAPTER_SKIP: "media.chapterSkip",
+    CHAPTER_START: "media.chapterStart",
+    ERROR: "media.error",
+    STATES_UPDATE: "media.statesUpdate"
+  };
+
+  /*
+  Copyright 2023 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+
+  var createMediaRequest = (function (_ref) {
+    var mediaRequestPayload = _ref.mediaRequestPayload,
+      action = _ref.action;
+    return createRequest({
+      payload: mediaRequestPayload,
+      edgeSubPath: "/va",
+      getAction: function getAction() {
+        return action;
+      },
+      getUseSendBeacon: function getUseSendBeacon() {
+        return false;
+      }
+    });
+  });
+
+  /*
+  Copyright 2023 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+  var createMediaEventManager = (function (_ref) {
+    var config = _ref.config,
+      eventManager = _ref.eventManager,
+      consent = _ref.consent,
+      sendEdgeNetworkRequest = _ref.sendEdgeNetworkRequest,
+      setTimestamp = _ref.setTimestamp;
+    return {
+      createMediaEvent: function createMediaEvent(_ref2) {
+        var options = _ref2.options;
+        var event = eventManager.createEvent();
+        var xdm = options.xdm;
+        setTimestamp(xdm);
+        event.setUserXdm(xdm);
+        if (xdm.eventType === MediaEvents.AD_START) {
+          var advertisingDetails = options.xdm.mediaCollection.advertisingDetails;
+          event.mergeXdm({
+            mediaCollection: {
+              advertisingDetails: {
+                playerName: advertisingDetails.playerName || config.streamingMedia.playerName
+              }
+            }
+          });
+        }
+        return event;
+      },
+      createMediaSession: function createMediaSession(options) {
+        var _config$streamingMedi = config.streamingMedia,
+          playerName = _config$streamingMedi.playerName,
+          channel = _config$streamingMedi.channel,
+          appVersion = _config$streamingMedi.appVersion;
+        var event = eventManager.createEvent();
+        var sessionDetails = options.xdm.mediaCollection.sessionDetails;
+        event.setUserXdm(options.xdm);
+        event.mergeXdm({
+          eventType: MediaEvents.SESSION_START,
+          mediaCollection: {
+            sessionDetails: {
+              playerName: sessionDetails.playerName || playerName,
+              channel: sessionDetails.channel || channel,
+              appVersion: sessionDetails.appVersion || appVersion
+            }
+          }
+        });
+        return event;
+      },
+      augmentMediaEvent: function augmentMediaEvent(_ref3) {
+        var event = _ref3.event,
+          playerId = _ref3.playerId,
+          getPlayerDetails = _ref3.getPlayerDetails,
+          sessionID = _ref3.sessionID;
+        if (!playerId || !getPlayerDetails) {
+          return event;
+        }
+        var _getPlayerDetails = getPlayerDetails({
+            playerId: playerId
+          }),
+          playhead = _getPlayerDetails.playhead,
+          qoeDataDetails = _getPlayerDetails.qoeDataDetails;
+        event.mergeXdm({
+          mediaCollection: {
+            playhead: toInteger(playhead),
+            qoeDataDetails: qoeDataDetails,
+            sessionID: sessionID
+          }
+        });
+        return event;
+      },
+      trackMediaSession: function trackMediaSession(_ref4) {
+        var event = _ref4.event,
+          mediaOptions = _ref4.mediaOptions;
+        return eventManager.sendEvent(event, {
+          mediaOptions: mediaOptions
+        });
+      },
+      trackMediaEvent: function trackMediaEvent(_ref5) {
+        var event = _ref5.event,
+          action = _ref5.action;
+        var mediaRequestPayload = createDataCollectionRequestPayload();
+        var request = createMediaRequest({
+          mediaRequestPayload: mediaRequestPayload,
+          action: action
+        });
+        mediaRequestPayload.addEvent(event);
+        event.finalize();
+        return consent.awaitConsent().then(function () {
+          return sendEdgeNetworkRequest({
+            request: request
+          }).then(function () {
+            return {};
+          });
+        });
+      }
+    };
+  });
+
+  /*
+  Copyright 2024 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+  var getContentState = function getContentState(eventType, sessionContentState) {
+    if (eventType === MediaEvents.AD_START || eventType === MediaEvents.Ad_BREAK_START || eventType === MediaEvents.AD_SKIP || eventType === MediaEvents.AD_COMPLETE) {
+      return "ad";
+    }
+    if (eventType === MediaEvents.AD_BREAK_COMPLETE || eventType === MediaEvents.CHAPTER_COMPLETE || eventType === MediaEvents.CHAPTER_START || eventType === MediaEvents.CHAPTER_SKIP || eventType === MediaEvents.SESSION_START) {
+      return "main";
+    }
+    if (eventType === MediaEvents.SESSION_END || eventType === MediaEvents.SESSION_COMPLETE) {
+      return "completed";
+    }
+    return sessionContentState;
+  };
+  var createTrackMediaEvent = (function (_ref) {
+    var mediaEventManager = _ref.mediaEventManager,
+      mediaSessionCacheManager = _ref.mediaSessionCacheManager,
+      config = _ref.config;
+    var sendMediaEvent = function sendMediaEvent(options) {
+      var event = mediaEventManager.createMediaEvent({
+        options: options
+      });
+      var playerId = options.playerId,
+        xdm = options.xdm;
+      var eventType = xdm.eventType;
+      var action = eventType.split(".")[1];
+      var _mediaSessionCacheMan = mediaSessionCacheManager.getSession(playerId),
+        getPlayerDetails = _mediaSessionCacheMan.getPlayerDetails,
+        sessionPromise = _mediaSessionCacheMan.sessionPromise,
+        playbackState = _mediaSessionCacheMan.playbackState;
+      return sessionPromise.then(function (result) {
+        if (!result.sessionId) {
+          return Promise.reject(new Error("Failed to trigger media event: " + eventType + ". Session ID is not available for playerId: " + playerId + "."));
+        }
+        mediaEventManager.augmentMediaEvent({
+          event: event,
+          eventType: eventType,
+          playerId: playerId,
+          getPlayerDetails: getPlayerDetails,
+          sessionID: result.sessionId
+        });
+        return mediaEventManager.trackMediaEvent({
+          event: event,
+          action: action
+        }).then(function () {
+          if (playerId) {
+            if (eventType === MediaEvents.SESSION_COMPLETE || eventType === MediaEvents.SESSION_END) {
+              mediaSessionCacheManager.stopPing({
+                playerId: playerId
+              });
+            } else {
+              var sessionPlaybackState = getContentState(eventType, playbackState);
+              if (sessionPlaybackState === "completed") {
+                return;
+              }
+              var interval = sessionPlaybackState === "ad" ? config.streamingMedia.adPingInterval : config.streamingMedia.mainPingInterval;
+              var pingId = setTimeout(function () {
+                var pingOptions = {
+                  playerId: playerId,
+                  xdm: {
+                    eventType: MediaEvents.PING
+                  }
+                };
+                sendMediaEvent(pingOptions);
+              }, interval * 1000);
+              mediaSessionCacheManager.savePing({
+                playerId: playerId,
+                pingId: pingId,
+                playbackState: sessionPlaybackState
+              });
+            }
+          }
+        });
+      });
+    };
+    return function (options) {
+      return sendMediaEvent(options);
+    };
+  });
+
+  /*
+  Copyright 2024 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+
+  var configValidators = boundObjectOf({
+    streamingMedia: boundObjectOf({
+      channel: boundString().nonEmpty().required(),
+      playerName: boundString().nonEmpty().required(),
+      appVersion: boundString(),
+      mainPingInterval: boundNumber().minimum(10).maximum(50).default(10),
+      adPingInterval: boundNumber().minimum(1).maximum(10).default(10)
+    }).noUnknownFields()
+  });
+
+  /*
+  Copyright 2023 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+
+  var validateSessionOptions = (function (_ref) {
+    var options = _ref.options;
+    var sessionValidator = boundAnyOf([boundObjectOf({
+      playerId: boundString().required(),
+      getPlayerDetails: boundCallback().required(),
+      xdm: boundObjectOf({
+        mediaCollection: boundObjectOf({
+          sessionDetails: boundObjectOf(boundAnything()).required()
+        })
+      })
+    }).required(), boundObjectOf({
+      xdm: boundObjectOf({
+        mediaCollection: boundObjectOf({
+          playhead: boundNumber().required(),
+          sessionDetails: boundObjectOf(boundAnything()).required()
+        })
+      })
+    }).required()], "Error validating the createMediaSession command options.");
+    return sessionValidator(options);
+  });
+
+  var validateMediaEventOptions = (function (_ref) {
+    var options = _ref.options;
+    var validator = boundAnyOf([boundObjectOf({
+      playerId: boundString().required(),
+      xdm: boundObjectOf({
+        eventType: boundEnumOf.apply(void 0, _toConsumableArray(Object.values(MediaEvents))).required(),
+        mediaCollection: boundObjectOf(boundAnything())
+      }).required()
+    }).required(), boundObjectOf({
+      xdm: boundObjectOf({
+        eventType: boundEnumOf.apply(void 0, _toConsumableArray(Object.values(MediaEvents))).required(),
+        mediaCollection: boundObjectOf({
+          playhead: boundNumber().integer().required(),
+          sessionID: boundString().required()
+        }).required()
+      }).required()
+    }).required()], "Error validating the sendMediaEvent command options.");
+    return validator(options);
+  });
+
+  /*
+  Copyright 2024 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+  var createStreamingMediaComponent = (function (_ref) {
+    var config = _ref.config,
+      trackMediaEvent = _ref.trackMediaEvent,
+      trackMediaSession = _ref.trackMediaSession,
+      mediaResponseHandler = _ref.mediaResponseHandler;
+    return {
+      lifecycle: {
+        onBeforeEvent: function onBeforeEvent(_ref2) {
+          var mediaOptions = _ref2.mediaOptions,
+            _ref2$onResponse = _ref2.onResponse,
+            onResponse = _ref2$onResponse === void 0 ? noop$1 : _ref2$onResponse;
+          if (!mediaOptions) {
+            return;
+          }
+          var legacy = mediaOptions.legacy,
+            playerId = mediaOptions.playerId,
+            getPlayerDetails = mediaOptions.getPlayerDetails;
+          if (legacy) {
+            return;
+          }
+          onResponse(function (_ref3) {
+            var response = _ref3.response;
+            return mediaResponseHandler({
+              playerId: playerId,
+              getPlayerDetails: getPlayerDetails,
+              response: response
+            });
+          });
+        }
+      },
+      commands: {
+        createMediaSession: {
+          optionsValidator: function optionsValidator(options) {
+            return validateSessionOptions({
+              options: options
+            });
+          },
+          run: trackMediaSession
+        },
+        sendMediaEvent: {
+          optionsValidator: function optionsValidator(options) {
+            return validateMediaEventOptions({
+              options: options
+            });
+          },
+          run: function run(options) {
+            if (!config.streamingMedia) {
+              return Promise.reject(new Error("Streaming media is not configured."));
+            }
+            return trackMediaEvent(options);
+          }
+        }
+      }
+    };
+  });
+
+  /*
+  Copyright 2024 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+  var createTrackMediaSession = (function (_ref) {
+    var config = _ref.config,
+      mediaEventManager = _ref.mediaEventManager,
+      mediaSessionCacheManager = _ref.mediaSessionCacheManager,
+      _ref$legacy = _ref.legacy,
+      legacy = _ref$legacy === void 0 ? false : _ref$legacy;
+    return function (options) {
+      if (!config.streamingMedia) {
+        return Promise.reject(new Error("Streaming media is not configured."));
+      }
+      var playerId = options.playerId,
+        getPlayerDetails = options.getPlayerDetails;
+      var event = mediaEventManager.createMediaSession(options);
+      mediaEventManager.augmentMediaEvent({
+        event: event,
+        playerId: playerId,
+        getPlayerDetails: getPlayerDetails
+      });
+      var sessionPromise = mediaEventManager.trackMediaSession({
+        event: event,
+        mediaOptions: {
+          playerId: playerId,
+          getPlayerDetails: getPlayerDetails,
+          legacy: legacy
+        }
+      });
+      mediaSessionCacheManager.storeSession({
+        playerId: playerId,
+        sessionDetails: {
+          sessionPromise: sessionPromise,
+          getPlayerDetails: getPlayerDetails,
+          playbackState: PlaybackState.MAIN
+        }
+      });
+      return sessionPromise;
+    };
+  });
+
+  /*
+  Copyright 2024 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+  var createMediaResponseHandler = (function (_ref) {
+    var mediaSessionCacheManager = _ref.mediaSessionCacheManager,
+      config = _ref.config,
+      trackMediaEvent = _ref.trackMediaEvent;
+    return function (_ref2) {
+      var response = _ref2.response,
+        playerId = _ref2.playerId,
+        getPlayerDetails = _ref2.getPlayerDetails;
+      var mediaPayload = response.getPayloadsByType("media-analytics:new-session");
+      if (isNonEmptyArray(mediaPayload)) {
+        var sessionId = mediaPayload[0].sessionId;
+        if (isBlankString(sessionId)) {
+          return {};
+        }
+        if (!playerId || !getPlayerDetails) {
+          return {
+            sessionId: sessionId
+          };
+        }
+        var pingId = setTimeout(function () {
+          trackMediaEvent({
+            playerId: playerId,
+            xdm: {
+              eventType: MediaEvents.PING
+            }
+          });
+        }, config.streamingMedia.mainPingInterval * 1000);
+        mediaSessionCacheManager.savePing({
+          playerId: playerId,
+          pingId: pingId,
+          playbackState: PlaybackState.MAIN
+        });
+        return {
+          sessionId: sessionId
+        };
+      }
+      return {};
+    };
+  });
+
+  /*
+  Copyright 2023 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+  /* eslint-disable import/no-restricted-paths */
+  var createStreamingMedia = function createStreamingMedia(_ref) {
+    var config = _ref.config,
+      logger = _ref.logger,
+      eventManager = _ref.eventManager,
+      sendEdgeNetworkRequest = _ref.sendEdgeNetworkRequest,
+      consent = _ref.consent;
+    var mediaSessionCacheManager = createMediaSessionCacheManager();
+    var mediaEventManager = createMediaEventManager({
+      config: config,
+      eventManager: eventManager,
+      logger: logger,
+      consent: consent,
+      sendEdgeNetworkRequest: sendEdgeNetworkRequest,
+      setTimestamp: injectTimestamp(function () {
+        return new Date();
+      })
+    });
+    var trackMediaEvent = createTrackMediaEvent({
+      mediaSessionCacheManager: mediaSessionCacheManager,
+      mediaEventManager: mediaEventManager,
+      config: config
+    });
+    var trackMediaSession = createTrackMediaSession({
+      config: config,
+      mediaEventManager: mediaEventManager,
+      mediaSessionCacheManager: mediaSessionCacheManager
+    });
+    var mediaResponseHandler = createMediaResponseHandler({
+      mediaSessionCacheManager: mediaSessionCacheManager,
+      config: config,
+      trackMediaEvent: trackMediaEvent
+    });
+    return createStreamingMediaComponent({
+      config: config,
+      trackMediaEvent: trackMediaEvent,
+      mediaEventManager: mediaEventManager,
+      mediaResponseHandler: mediaResponseHandler,
+      trackMediaSession: trackMediaSession
+    });
+  };
+  createStreamingMedia.namespace = "Streaming media";
+  createStreamingMedia.configValidators = configValidators;
+
+  /*
+  Copyright 2023 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+
+  var MEDIA_TYPE = {
+    Video: "video",
+    Audio: "audio"
+  };
+  var STREAM_TYPE = {
+    VOD: "vod",
+    Live: "live",
+    Linear: "linear",
+    Podcast: "podcast",
+    Audiobook: "audiobook",
+    AOD: "aod"
+  };
+  var PLAYER_STATE = {
+    FullScreen: "fullScreen",
+    ClosedCaption: "closedCaptioning",
+    Mute: "mute",
+    PictureInPicture: "pictureInPicture",
+    InFocus: "inFocus"
+  };
+  var EVENT = {
+    /**
+     * Constant defining event type for AdBreak start
+     */
+    AdBreakStart: "adBreakStart",
+    /**
+     * Constant defining event type for AdBreak complete
+     */
+    AdBreakComplete: "adBreakComplete",
+    /**
+     * Constant defining event type for Ad start
+     */
+    AdStart: "adStart",
+    /**
+     * Constant defining event type for Ad complete
+     */
+    AdComplete: "adComplete",
+    /**
+     * Constant defining event type for Ad skip
+     */
+    AdSkip: "adSkip",
+    /**
+     * Constant defining event type for Chapter start
+     */
+    ChapterStart: "chapterStart",
+    /**
+     * Constant defining event type for Chapter complete
+     */
+    ChapterComplete: "chapterComplete",
+    /**
+     * Constant defining event type for Chapter skip
+     */
+    ChapterSkip: "chapterSkip",
+    /**
+     * Constant defining event type for Seek start
+     */
+    SeekStart: "seekStart",
+    /**
+     * Constant defining event type for Seek complete
+     */
+    SeekComplete: "seekComplete",
+    /**
+     * Constant defining event type for Buffer start
+     */
+    BufferStart: "bufferStart",
+    /**
+     * Constant defining event type for Buffer complete
+     */
+    BufferComplete: "bufferComplete",
+    /**
+     * Constant defining event type for change in Bitrate
+     */
+    BitrateChange: "bitrateChange",
+    /**
+     * Constant defining event type for Custom State Start
+     */
+    StateStart: "stateStart",
+    /**
+     * Constant defining event type for Custom State End
+     */
+    StateEnd: "stateEnd"
+  };
+  var MEDIA_EVENTS_INTERNAL = {
+    SessionStart: "sessionStart",
+    SessionEnd: "sessionEnd",
+    SessionComplete: "sessionComplete",
+    Play: "play",
+    Pause: "pauseStart",
+    Error: "error",
+    StateUpdate: "statesUpdate"
+  };
+  var MEDIA_OBJECT_KEYS = {
+    MediaResumed: "media.resumed",
+    GranularAdTracking: "media.granularadtracking"
+  };
+  var VIDEO_METADATA_KEYS = {
+    Show: "a.media.show",
+    Season: "a.media.season",
+    Episode: "a.media.episode",
+    AssetId: "a.media.asset",
+    Genre: "a.media.genre",
+    FirstAirDate: "a.media.airDate",
+    FirstDigitalDate: "a.media.digitalDate",
+    Rating: "a.media.rating",
+    Originator: "a.media.originator",
+    Network: "a.media.network",
+    ShowType: "a.media.type",
+    AdLoad: "a.media.adLoad",
+    MVPD: "a.media.pass.mvpd",
+    Authorized: "a.media.pass.auth",
+    DayPart: "a.media.dayPart",
+    Feed: "a.media.feed",
+    StreamFormat: "a.media.format"
+  };
+  var AUDIO_METADATA_KEYS = {
+    Artist: "a.media.artist",
+    Album: "a.media.album",
+    Label: "a.media.label",
+    Author: "a.media.author",
+    Station: "a.media.station",
+    Publisher: "a.media.publisher"
+  };
+  var AD_METADATA_KEYS = {
+    Advertiser: "a.media.ad.advertiser",
+    CampaignId: "a.media.ad.campaign",
+    CreativeId: "a.media.ad.creative",
+    PlacementId: "a.media.ad.placement",
+    SiteId: "a.media.ad.site",
+    CreativeUrl: "a.media.ad.creativeURL"
+  };
+
+  var createLegacyMediaComponent = (function (_ref) {
+    var trackMediaEvent = _ref.trackMediaEvent,
+      trackMediaSession = _ref.trackMediaSession,
+      mediaResponseHandler = _ref.mediaResponseHandler,
+      logger = _ref.logger,
+      createMediaHelper = _ref.createMediaHelper,
+      createGetInstance = _ref.createGetInstance,
+      config = _ref.config;
+    return {
+      lifecycle: {
+        onBeforeEvent: function onBeforeEvent(_ref2) {
+          var mediaOptions = _ref2.mediaOptions,
+            _ref2$onResponse = _ref2.onResponse,
+            onResponse = _ref2$onResponse === void 0 ? noop$1 : _ref2$onResponse;
+          if (!mediaOptions) {
+            return;
+          }
+          var legacy = mediaOptions.legacy,
+            playerId = mediaOptions.playerId,
+            getPlayerDetails = mediaOptions.getPlayerDetails;
+          if (!legacy) {
+            return;
+          }
+          onResponse(function (_ref3) {
+            var response = _ref3.response;
+            return mediaResponseHandler({
+              playerId: playerId,
+              getPlayerDetails: getPlayerDetails,
+              response: response
+            });
+          });
+        }
+      },
+      commands: {
+        getMediaAnalyticsTracker: {
+          run: function run() {
+            if (!config.streamingMedia) {
+              return Promise.reject(new Error("Streaming media is not configured."));
+            }
+            logger.info("Streaming media is configured in legacy mode.");
+            var mediaAnalyticsHelper = createMediaHelper({
+              logger: logger
+            });
+            return Promise.resolve(_objectSpread2({
+              getInstance: function getInstance() {
+                return createGetInstance({
+                  logger: logger,
+                  trackMediaEvent: trackMediaEvent,
+                  trackMediaSession: trackMediaSession,
+                  uuid: v4
+                });
+              },
+              Event: EVENT,
+              MediaType: MEDIA_TYPE,
+              PlayerState: PLAYER_STATE,
+              StreamType: STREAM_TYPE,
+              MediaObjectKey: MEDIA_OBJECT_KEYS,
+              VideoMetadataKeys: VIDEO_METADATA_KEYS,
+              AudioMetadataKeys: AUDIO_METADATA_KEYS,
+              AdMetadataKeys: AD_METADATA_KEYS
+            }, mediaAnalyticsHelper));
+          }
+        }
+      }
+    };
+  });
+
+  /*
+  Copyright 2023 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+
+  var createMediaHelper = (function (_ref) {
+    var logger = _ref.logger;
+    var createMediaObject = function createMediaObject(friendlyName, name, length, contentType, streamType) {
+      var mediaObject = {
+        friendlyName: friendlyName,
+        name: name,
+        length: length,
+        streamType: streamType,
+        contentType: contentType
+      };
+      var validate = boundObjectOf({
+        friendlyName: boundString().nonEmpty(),
+        name: boundString().nonEmpty(),
+        length: boundNumber().required(),
+        streamType: boundString().nonEmpty(),
+        contentType: boundString().nonEmpty()
+      });
+      try {
+        var result = validate(mediaObject);
+        var sessionDetails = {
+          name: result.name,
+          friendlyName: result.friendlyName,
+          length: result.length,
+          streamType: result.streamType,
+          contentType: result.contentType
+        };
+        return {
+          sessionDetails: sessionDetails
+        };
+      } catch (error) {
+        logger.warn("An error occurred while creating the Media Object.", error);
+        return {};
+      }
+    };
+    var createAdBreakObject = function createAdBreakObject(name, position, startTime) {
+      var adBreakObject = {
+        friendlyName: name,
+        offset: position,
+        index: startTime
+      };
+      var validator = boundObjectOf({
+        friendlyName: boundString().nonEmpty(),
+        offset: boundNumber(),
+        index: boundNumber()
+      });
+      try {
+        var result = validator(adBreakObject);
+        var advertisingPodDetails = {
+          friendlyName: result.friendlyName,
+          offset: result.offset,
+          index: result.index
+        };
+        return {
+          advertisingPodDetails: advertisingPodDetails
+        };
+      } catch (error) {
+        logger.warn("An error occurred while creating the Ad Break Object.", error);
+        return {};
+      }
+    };
+    var createAdObject = function createAdObject(name, id, position, length) {
+      var adObject = {
+        friendlyName: name,
+        name: id,
+        podPosition: position,
+        length: length
+      };
+      var validator = boundObjectOf({
+        friendlyName: boundString().nonEmpty(),
+        name: boundString().nonEmpty(),
+        podPosition: boundNumber(),
+        length: boundNumber()
+      });
+      try {
+        var result = validator(adObject);
+        var advertisingDetails = {
+          friendlyName: result.friendlyName,
+          name: result.name,
+          podPosition: result.podPosition,
+          length: result.length
+        };
+        return {
+          advertisingDetails: advertisingDetails
+        };
+      } catch (error) {
+        logger.warn("An error occurred while creating the Advertising Object.", error);
+        return {};
+      }
+    };
+    var createChapterObject = function createChapterObject(name, position, length, startTime) {
+      var chapterDetailsObject = {
+        friendlyName: name,
+        offset: position,
+        length: length,
+        index: startTime
+      };
+      var validator = boundObjectOf({
+        friendlyName: boundString().nonEmpty(),
+        offset: boundNumber(),
+        length: boundNumber(),
+        index: boundNumber()
+      });
+      try {
+        var result = validator(chapterDetailsObject);
+        var chapterDetails = {
+          friendlyName: result.friendlyName,
+          offset: result.offset,
+          index: result.index,
+          length: result.length
+        };
+        return {
+          chapterDetails: chapterDetails
+        };
+      } catch (error) {
+        logger.warn("An error occurred while creating the Chapter Object.", error);
+        return {};
+      }
+    };
+    var createStateObject = function createStateObject(stateName) {
+      var STATE_NAME_REGEX = /^[a-zA-Z0-9_]{1,64}$/;
+      var validator = boundString().matches(STATE_NAME_REGEX, "This is not a valid state name.");
+      try {
+        var result = validator(stateName);
+        return {
+          name: result
+        };
+      } catch (error) {
+        logger.warn("An error occurred while creating the State Object.", error);
+        return {};
+      }
+    };
+    var createQoEObject = function createQoEObject(bitrate, droppedFrames, fps, startupTime) {
+      var qoeObject = {
+        bitrate: bitrate,
+        droppedFrames: droppedFrames,
+        fps: fps,
+        startupTime: startupTime
+      };
+      var validator = boundObjectOf({
+        bitrate: boundNumber(),
+        droppedFrames: boundNumber(),
+        fps: boundNumber(),
+        startupTime: boundNumber()
+      });
+      try {
+        var result = validator(qoeObject);
+        return {
+          bitrate: result.bitrate,
+          droppedFrames: result.droppedFrames,
+          framesPerSecond: result.fps,
+          timeToStart: result.startupTime
+        };
+      } catch (error) {
+        logger.warn("An error occurred while creating the QOE Object.", error);
+        return {};
+      }
+    };
+    return {
+      createMediaObject: createMediaObject,
+      createAdBreakObject: createAdBreakObject,
+      createAdObject: createAdObject,
+      createChapterObject: createChapterObject,
+      createStateObject: createStateObject,
+      createQoEObject: createQoEObject
+    };
+  });
+
+  /*
+  Copyright 2023 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+
+  var mediaToXdmKeys = {
+    "a.media.show": "show",
+    "a.media.season": "season",
+    "a.media.episode": "episode",
+    "a.media.asset": "assetID",
+    "a.media.genre": "genre",
+    "a.media.airDate": "firstAirDate",
+    "a.media.digitalDate": "firstDigitalDate",
+    "a.media.rating": "rating",
+    "a.media.originator": "originator",
+    "a.media.network": "network",
+    "a.media.type": "showType",
+    "a.media.adLoad": "adLoad",
+    "a.media.pass.mvpd": "mvpd",
+    "a.media.pass.auth": "authorized",
+    "a.media.dayPart": "dayPart",
+    "a.media.feed": "feed",
+    "a.media.format": "streamFormat",
+    "a.media.artist": "artist",
+    "a.media.album": "album",
+    "a.media.label": "label",
+    "a.media.author": "author",
+    "a.media.station": "station",
+    "a.media.publisher": "publisher",
+    "media.resumed": "hasResume"
+  };
+  var adsToXdmKeys = {
+    "a.media.ad.advertiser": "advertiser",
+    "a.media.ad.campaign": "campaignID",
+    "a.media.ad.creative": "creativeID",
+    "a.media.ad.placement": "placementID",
+    "a.media.ad.site": "siteID",
+    "a.media.ad.creativeURL": "creativeURL"
+  };
+
+  var createGetInstance = (function (_ref) {
+    var logger = _ref.logger,
+      trackMediaSession = _ref.trackMediaSession,
+      trackMediaEvent = _ref.trackMediaEvent,
+      uuid = _ref.uuid;
+    var trackerState = null;
+    var instantiateTracker = function instantiateTracker() {
+      trackerState = {
+        qoe: null,
+        lastPlayhead: 0,
+        playerId: uuid()
+      };
+    };
+    var getEventType = function getEventType(_ref2) {
+      var eventType = _ref2.eventType;
+      if (eventType === EVENT.BufferComplete || eventType === EVENT.SeekComplete) {
+        return MEDIA_EVENTS_INTERNAL.Play;
+      }
+      if (eventType === EVENT.StateStart || eventType === EVENT.StateEnd) {
+        return MEDIA_EVENTS_INTERNAL.StateUpdate;
+      }
+      if (eventType === EVENT.SeekStart) {
+        return MEDIA_EVENTS_INTERNAL.Pause;
+      }
+      return eventType;
+    };
+    var createXdmObject = function createXdmObject(_ref3) {
+      var eventType = _ref3.eventType,
+        _ref3$mediaDetails = _ref3.mediaDetails,
+        mediaDetails = _ref3$mediaDetails === void 0 ? {} : _ref3$mediaDetails,
+        _ref3$contextData = _ref3.contextData,
+        contextData = _ref3$contextData === void 0 ? [] : _ref3$contextData;
+      var action = getEventType({
+        eventType: eventType
+      });
+      if (eventType === EVENT.StateStart) {
+        var _xdm = {
+          eventType: "media." + action,
+          mediaCollection: {
+            statesStart: [mediaDetails]
+          }
+        };
+        return _xdm;
+      }
+      if (eventType === EVENT.StateEnd) {
+        var _xdm2 = {
+          eventType: "media." + action,
+          mediaCollection: {
+            statesEnd: [mediaDetails]
+          }
+        };
+        return _xdm2;
+      }
+      var xdm = {
+        eventType: "media." + action,
+        mediaCollection: _objectSpread2({}, mediaDetails)
+      };
+      var customMetadata = [];
+      Object.keys(contextData).forEach(function (key) {
+        if (mediaToXdmKeys[key]) {
+          xdm.mediaCollection.sessionDetails[mediaToXdmKeys[key]] = contextData[key];
+        } else if (adsToXdmKeys[key]) {
+          xdm.mediaCollection.advertisingDetails[adsToXdmKeys[key]] = contextData[key];
+        } else {
+          customMetadata.push({
+            name: key,
+            value: contextData[key]
+          });
+        }
+      });
+      if (isNonEmptyArray(customMetadata)) {
+        xdm.mediaCollection.customMetadata = customMetadata;
+      }
+      return xdm;
+    };
+    return {
+      trackSessionStart: function trackSessionStart(mediaObject) {
+        var contextData = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+        if (isNil(mediaObject) || isEmptyObject(mediaObject)) {
+          logger.warn("Invalid media object");
+          return {};
+        }
+        if (trackerState === null) {
+          logger.warn("The Media Session was completed. Restarting a new session.");
+          instantiateTracker();
+        }
+        var xdm = createXdmObject({
+          eventType: MEDIA_EVENTS_INTERNAL.SessionStart,
+          mediaDetails: mediaObject,
+          contextData: contextData
+        });
+        return trackMediaSession({
+          playerId: trackerState.playerId,
+          getPlayerDetails: function getPlayerDetails() {
+            return {
+              playhead: trackerState.lastPlayhead,
+              qoeDataDetails: trackerState.qoe
+            };
+          },
+          xdm: xdm
+        });
+      },
+      trackPlay: function trackPlay() {
+        if (trackerState === null) {
+          logger.warn("The Media Session was completed.");
+          return {};
+        }
+        var xdm = createXdmObject({
+          eventType: MEDIA_EVENTS_INTERNAL.Play
+        });
+        return trackMediaEvent({
+          playerId: trackerState.playerId,
+          xdm: xdm
+        });
+      },
+      trackPause: function trackPause() {
+        if (trackerState === null) {
+          logger.warn("The Media Session was completed.");
+          return {};
+        }
+        var xdm = createXdmObject({
+          eventType: MEDIA_EVENTS_INTERNAL.Pause
+        });
+        return trackMediaEvent({
+          playerId: trackerState.playerId,
+          xdm: xdm
+        });
+      },
+      trackSessionEnd: function trackSessionEnd() {
+        if (trackerState === null) {
+          logger.warn("The Media Session was completed.");
+          return {};
+        }
+        var xdm = createXdmObject({
+          eventType: MEDIA_EVENTS_INTERNAL.SessionEnd
+        });
+        return trackMediaEvent({
+          playerId: trackerState.playerId,
+          xdm: xdm
+        });
+      },
+      trackComplete: function trackComplete() {
+        if (trackerState === null) {
+          logger.warn("The Media Session was completed.");
+          return {};
+        }
+        var xdm = createXdmObject({
+          eventType: MEDIA_EVENTS_INTERNAL.SessionComplete
+        });
+        return trackMediaEvent({
+          playerId: trackerState.playerId,
+          xdm: xdm
+        });
+      },
+      trackError: function trackError(errorId) {
+        logger.warn("trackError(" + errorId + ")");
+        if (trackerState === null) {
+          logger.warn("The Media Session was completed.");
+          return {};
+        }
+        var errorDetails = {
+          name: errorId,
+          source: "player"
+        };
+        var xdm = createXdmObject({
+          eventType: MEDIA_EVENTS_INTERNAL.Error,
+          mediaDetails: {
+            errorDetails: errorDetails
+          }
+        });
+        return trackMediaEvent({
+          playerId: trackerState.playerId,
+          xdm: xdm
+        });
+      },
+      trackEvent: function trackEvent(eventType, info, context) {
+        if (isEmptyObject(info)) {
+          logger.warn("Invalid media object.");
+          return {};
+        }
+        if (trackerState === null) {
+          logger.warn("The Media Session was completed.");
+          return {};
+        }
+        if (!includes(Object.values(EVENT), eventType)) {
+          logger.warn("Invalid event type");
+          return {};
+        }
+        var xdm = createXdmObject({
+          eventType: eventType,
+          mediaDetails: info,
+          contextData: context
+        });
+        return trackMediaEvent({
+          playerId: trackerState.playerId,
+          xdm: xdm
+        });
+      },
+      updatePlayhead: function updatePlayhead(time) {
+        if (trackerState === null) {
+          logger.warn("The Media Session was completed.");
+          return;
+        }
+        if (isNumber$1(time)) {
+          trackerState.lastPlayhead = parseInt(time, 10);
+        }
+      },
+      updateQoEObject: function updateQoEObject(qoeObject) {
+        if (trackerState === null) {
+          logger.warn("The Media Session was completed.");
+          return;
+        }
+        if (!qoeObject) {
+          return;
+        }
+        trackerState.qoe = qoeObject;
+      },
+      destroy: function destroy() {
+        logger.warn("Destroy called, destroying the tracker.");
+        trackerState = null;
+      }
+    };
+  });
+
+  /*
+  Copyright 2024 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+  /* eslint-disable import/no-restricted-paths */
+
+  var createLegacyMediaAnalytics = function createLegacyMediaAnalytics(_ref) {
+    var eventManager = _ref.eventManager,
+      sendEdgeNetworkRequest = _ref.sendEdgeNetworkRequest,
+      config = _ref.config,
+      logger = _ref.logger,
+      consent = _ref.consent;
+    var mediaSessionCacheManager = createMediaSessionCacheManager();
+    var mediaEventManager = createMediaEventManager({
+      sendEdgeNetworkRequest: sendEdgeNetworkRequest,
+      config: config,
+      consent: consent,
+      eventManager: eventManager,
+      setTimestamp: injectTimestamp(function () {
+        return new Date();
+      })
+    });
+    var trackMediaEvent = createTrackMediaEvent({
+      mediaSessionCacheManager: mediaSessionCacheManager,
+      mediaEventManager: mediaEventManager,
+      config: config
+    });
+    var trackMediaSession = createTrackMediaSession({
+      config: config,
+      mediaEventManager: mediaEventManager,
+      mediaSessionCacheManager: mediaSessionCacheManager,
+      legacy: true
+    });
+    var mediaResponseHandler = createMediaResponseHandler({
+      mediaSessionCacheManager: mediaSessionCacheManager,
+      config: config,
+      trackMediaEvent: trackMediaEvent
+    });
+    return createLegacyMediaComponent({
+      mediaResponseHandler: mediaResponseHandler,
+      trackMediaSession: trackMediaSession,
+      trackMediaEvent: trackMediaEvent,
+      createMediaHelper: createMediaHelper,
+      createGetInstance: createGetInstance,
+      logger: logger,
+      config: config
+    });
+  };
+  createLegacyMediaAnalytics.namespace = "Legacy Media Analytics";
+
+  /*
+  Copyright 2023 Adobe. All rights reserved.
+  This file is licensed to you under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may obtain a copy
+  of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software distributed under
+  the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+  OF ANY KIND, either express or implied. See the License for the specific language
+  governing permissions and limitations under the License.
+  */
+
+
   // TODO: Register the Components here statically for now. They might be registered differently.
   // TODO: Figure out how sub-components will be made available/registered
-  var componentCreators = [createDataCollector, createActivityCollector, createIdentity, createAudiences, createPersonalization, createContext, createPrivacy, createEventMerge, createLibraryInfo, createMachineLearning, createDecisioningEngine];
+
+  var componentCreators = [createDataCollector, createActivityCollector, createIdentity, createAudiences, createPersonalization, createContext, createPrivacy, createEventMerge, createLibraryInfo, createMachineLearning, createDecisioningEngine, createLegacyMediaAnalytics, createStreamingMedia];
 
   var CONFIG_DOC_URI = "https://adobe.ly/3sHh553";
   var transformOptions = function transformOptions(_ref) {
@@ -12029,7 +13648,7 @@
     return componentCreators.reduce(function (memo, _ref2) {
       var buildOnInstanceConfiguredExtraParams = _ref2.buildOnInstanceConfiguredExtraParams;
       if (buildOnInstanceConfiguredExtraParams) {
-        reactorObjectAssign(memo, buildOnInstanceConfiguredExtraParams({
+        assign$1(memo, buildOnInstanceConfiguredExtraParams({
           config: config,
           logger: logger
         }));
@@ -12112,6 +13731,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var initializeComponents = (function (_ref) {
     var componentCreators = _ref.componentCreators,
       lifecycle = _ref.lifecycle,
@@ -12150,8 +13770,9 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createConfig = function createConfig(options) {
-    return reactorObjectAssign({}, options);
+    return assign$1({}, options);
   };
 
   /*
@@ -12193,6 +13814,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createCoreConfigs = (function () {
     return boundObjectOf({
       debugEnabled: boundBoolean().default(false),
@@ -12217,6 +13839,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var injectHandleError = (function (_ref) {
     var errorPrefix = _ref.errorPrefix,
       logger = _ref.logger;
@@ -12379,6 +14002,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createLogger = (function (_ref) {
     var getDebugEnabled = _ref.getDebugEnabled,
       console = _ref.console,
@@ -12391,7 +14015,7 @@
     var notifyMonitors = function notifyMonitors(method, data) {
       var monitors = getMonitors();
       if (monitors.length > 0) {
-        var dataWithContext = reactorObjectAssign({}, context, data);
+        var dataWithContext = assign$1({}, context, data);
         monitors.forEach(function (monitor) {
           if (monitor[method]) {
             monitor[method](dataWithContext);
@@ -12599,6 +14223,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var STATE_STORE_HANDLE_TYPE = "state:store";
   var createCookieTransfer = (function (_ref) {
     var cookieJar = _ref.cookieJar,
@@ -12691,6 +14316,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var injectShouldTransferCookie = (function (_ref) {
     var orgId = _ref.orgId,
       targetMigrationEnabled = _ref.targetMigrationEnabled;
@@ -12762,6 +14388,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var injectSendEdgeNetworkRequest = (function (_ref) {
     var config = _ref.config,
       lifecycle = _ref.lifecycle,
@@ -12798,7 +14425,7 @@
       }).then(function () {
         var endpointDomain = request.getUseIdThirdPartyDomain() ? ID_THIRD_PARTY : edgeDomain;
         var locationHint = getLocationHint();
-        var edgeBasePathWithLocationHint = locationHint ? edgeBasePath + "/" + locationHint : edgeBasePath;
+        var edgeBasePathWithLocationHint = locationHint ? edgeBasePath + "/" + locationHint + request.getEdgeSubPath() : "" + edgeBasePath + request.getEdgeSubPath();
         var configId = request.getDatastreamIdOverride() || datastreamId;
         var payload = request.getPayload();
         if (configId !== datastreamId) {
@@ -12872,6 +14499,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var MESSAGE_PREFIX = "The server responded with a";
   var injectProcessWarningsAndErrors = (function (_ref) {
     var logger = _ref.logger;
@@ -12910,6 +14538,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var injectGetLocationHint = (function (_ref) {
     var orgId = _ref.orgId,
       cookieJar = _ref.cookieJar;
@@ -12940,6 +14569,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var MAX_RETRIES = 3;
   var RETRYABLE_STATUS_CODES = [TOO_MANY_REQUESTS, SERVICE_UNAVAILABLE, BAD_GATEWAY, GATEWAY_TIMEOUT];
 
@@ -12962,6 +14592,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
 
   // The retry gets incrementally (but not exponentially) longer for each retry.
   var FIRST_DELAY_MILLIS = 1000;
@@ -13091,6 +14722,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   var createNamespacedStorage = injectStorage(window);
   var _window = window,
     console$1 = _window.console,
@@ -13293,6 +14925,7 @@
   OF ANY KIND, either express or implied. See the License for the specific language
   governing permissions and limitations under the License.
   */
+
   core();
 
 })();
